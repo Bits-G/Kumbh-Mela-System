@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+    body { font-family: sans-serif; font-size: 13px; }
+    h2 { text-align: center; }
+    .entry {
+        margin-bottom: 14px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #070707;
+    }
+    .entry p { margin: 5px 20px; }
+    .label { font-weight: bold; }
+</style>
+</head>
+<body>
+    <h2>Kumbh Mela Officer Details — Search Results of ({{ query }})</h2>
+    <p>Total entries: {{ results|length }}</p>
+    <hr>
+    {% for officer in results %}
+    <div class="entry">
+        <p><span class="label">Name (नाम):</span> {{ officer.name }}</p>
+        <p><span class="label">Mobile No. (नंबर):</span> {{ officer.mobile_number }}</p>
+        <p><span class="label">Designation (अधिकारी पद):</span> {{ officer.designation }}</p>
+        <p><span class="label">State (राज्य):</span> {{ officer.state }}</p>
+        <p><span class="label">City (शहर):</span> {{ officer.city }}</p>
+        <p><span class="label">Address (पत्ता):</span> {{ officer.address }}</p>
+        <p><span class="label">Work (काम):</span> {{ officer.work }}</p>
+    </div>
+    
+    {% endfor %}
+</body>
+</html>

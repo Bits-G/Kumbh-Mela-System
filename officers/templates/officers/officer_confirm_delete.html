@@ -1,0 +1,12 @@
+{% extends 'officers/base.html' %}
+{% block title %}Delete Confirm{% endblock %}
+{% block content %}
+<div class="card p-4" style="max-width:500px;margin:auto;">
+    <h5>क्या आप वाकई <strong>{{ officer.name }}</strong> की एंट्री हटाना चाहते हैं?</h5>
+    <form method="post" class="mt-3">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">हाँ, Delete करें</button>
+        <a href="{% url 'officer_list' %}" class="btn btn-secondary">रद्द करें</a>
+    </form>
+</div>
+{% endblock %}

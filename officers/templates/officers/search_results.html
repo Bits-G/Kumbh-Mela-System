@@ -1,0 +1,120 @@
+
+{% extends 'officers/base.html' %}
+{% block title %}Search{% endblock %}
+{% block content %}
+<div class="card p-4 mb-4">
+    <h4 class="mb-3">🔍 खोजें (Search)</h4>
+    <form method="get" class="row g-2">
+        <div class="col-md-4">
+            <select name="search_by" class="form-select">
+                <option value="name" {% if search_by == 'name' %}selected{% endif %}>Search by Name</option>
+                <option value="mobile" {% if search_by == 'mobile' %}selected{% endif %}>Search by Mobile No.</option>
+                <option value="address" {% if search_by == 'address' %}selected{% endif %}>Search by Address</option>
+                <option value="designation" {% if search_by == 'designation' %}selected{% endif %}>Search by अधिकारी पद</option>
+                <option value="state" {% if search_by == 'state' %}selected{% endif %}>Search by State</option>
+                <option value="city" {% if search_by == 'city' %}selected{% endif %}>Search by City</option>
+            </select>
+        </div>
+        <div class="col-md-6">
+            <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="यहां खोजें...">
+        </div>
+        <div class="col-md-2">
+            <button class="btn btn-success w-100" type="submit">Search</button>
+        </div>
+    </form>
+</div>
+
+{% if query %}
+<h5 class="mb-3">परिणाम ({{ results|length }})</h5>
+
+{% if results %}
+<div class="d-flex gap-3 align-items-center mb-3 flex-wrap">
+    <a href="{{ pdf_full_url }}" target="_blank" class="btn btn-outline-primary">📄 Sabhi Results ka PDF dekho</a>
+    <a href="https://wa.me/?text={{ pdf_full_url|urlencode }}" target="_blank" class="btn btn-success">
+        💬 WhatsApp pe Link Bhejo
+    </a>
+    <div class="text-center">
+    <img id="qrImage" src="{% url 'search_results_qr' %}?q={{ query|urlencode }}&search_by={{ search_by }}" width="90" height="90" alt="QR">
+    <div><small class="text-muted">PDF access QR</small></div>
+    <button type="button" class="btn btn-sm btn-outline-success mt-1" onclick="shareQRImage()">
+        📤 QR Photo Share Karo
+    </button>
+</div>
+</div>
+<script>
+async function shareQRImage() {
+    const qrImg = document.getElementById('qrImage');
+    const shareMessage = "Kumbh Mela Officer Details — Search Results of {{ query|escapejs }}\nClick on PDF Link 👉: {{ pdf_full_url|escapejs }} or\nScan below QR Code to open PDF👇.";
+
+    try {
+        const response = await fetch(qrImg.src);
+        const blob = await response.blob();
+        const file = new File([blob], 'qr-code.png', { type: 'image/png' });
+
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({
+                files: [file],
+                title: 'Kumbh Mela Search Results QR',
+                text: shareMessage,
+            });
+        } else {
+            // Fallback: download the image so user can manually share
+            const link = document.createElement('a');
+            link.href = qrImg.src;
+            link.download = 'qr-code.png';
+            link.click();
+            alert('Aapke browser mein direct share support nahi hai. QR image download ho gayi hai — usse WhatsApp mein manually attach karo, aur ye message likh do:\n\n' + shareMessage);
+        }
+    } catch (err) {
+        alert('QR share karte waqt error aaya: ' + err.message);
+    }
+}
+</script>
+{% endif %}
+
+<div class="row g-3">
+    {% for officer in results %}
+    <div class="col-md-6">
+        <div class="card p-3">
+            <h5>{{ officer.name }}</h5>
+            <p class="mb-1"><strong>नंबर:</strong> {{ officer.mobile_number }}</p>
+            <p class="mb-1"><strong>अधिकारी पद:</strong> {{ officer.designation }}</p>
+            <p class="mb-1"><strong>राज्य/शहर:</strong> {{ officer.state }}, {{ officer.city }}</p>
+            <p class="mb-1"><strong>पत्ता:</strong> {{ officer.address }}</p>
+            <p class="mb-2"><strong>काम:</strong> {{ officer.work }}</p>
+            
+            <img src="{% url 'officer_qr_code' officer.pk %}" width="60" height="60" class="mb-2" alt="QR">
+
+            <div class="dropdown">
+                <button class="btn btn-sm btn-outline-dark dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    <i class="bi bi-share-fill"></i> Share
+                </button>
+                <ul class="dropdown-menu">
+                    <li>
+                        <a class="dropdown-item"
+                           href="https://wa.me/?text={{ officer.name|urlencode }}%20-%20{{ officer.designation|urlencode }}%0APDF:%20{{ request.scheme }}://{{ request.get_host }}{% url 'generate_officer_pdf' officer.pk %}"
+                           target="_blank">
+                           <i class="bi bi-whatsapp text-success"></i> WhatsApp
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item"
+                           href="sms:?body={{ officer.name|urlencode }}%20details:%20{{ request.scheme }}://{{ request.get_host }}{% url 'generate_officer_pdf' officer.pk %}">
+                           <i class="bi bi-chat-dots text-primary"></i> SMS
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="{% url 'generate_officer_pdf' officer.pk %}" target="_blank">
+                           <i class="bi bi-file-earmark-pdf text-danger"></i> View / Download PDF
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <p class="text-muted">कोई परिणाम नहीं मिला</p>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

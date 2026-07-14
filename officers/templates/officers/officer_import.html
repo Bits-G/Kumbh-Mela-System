@@ -1,0 +1,31 @@
+{% extends 'officers/base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h3>Entries Import Karo (CSV / Excel)</h3>
+
+    {% if imported_count %}
+        <div class="alert alert-success">
+            ✅ {{ imported_count }} entries safaltapoorvak import hui!
+        </div>
+    {% endif %}
+
+    {% if error_message %}
+        <div class="alert alert-danger">{{ error_message }}</div>
+    {% endif %}
+
+    <div class="card p-3">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label class="form-label">File chuno (.csv ya .xlsx)</label>
+                <input type="file" name="data_file" class="form-control" accept=".csv,.xlsx" required>
+            </div>
+            <small class="text-muted d-block mb-3">
+                Columns ye hone chahiye (header row mein): name, mobile_number, designation, city, state, address, work
+            </small>
+            <button type="submit" class="btn btn-primary">Import Karo</button>
+            <a href="{% url 'officer_list' %}" class="btn btn-secondary">Sabhi Entries Dekho</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

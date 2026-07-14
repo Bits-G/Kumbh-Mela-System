@@ -1,0 +1,348 @@
+{% extends 'officers/base.html' %}
+{% block title %}{{ action }} Entry{% endblock %}
+
+{% block content %}
+
+<div id="successToast"
+     class="alert alert-success position-fixed top-0 end-0 m-4 {% if not just_added %}d-none{% endif %}"
+     style="z-index:9999;">
+    ✅ Entry सफलतापूर्वक जोड़ी गई (Added Successfully)
+</div>
+
+<div class="card p-4 shadow" style="max-width:600px; margin:auto;">
+    <h4 class="mb-3 text-center">{{ action }} एंट्री</h4>
+
+    <form method="post">
+        {% csrf_token %}
+
+        {% for field in form %}
+        <div class="mb-3">
+            <label class="form-label">{{ field.label }}</label>
+            {{ field }}
+            {% if field.name == "designation" %}
+            <datalist id="designation-list">
+                <option value="Police Inspector">
+                <option value="Police Constable">
+                <option value="Medical Officer">
+                <option value="Health Inspector">
+                <option value="Fire Officer">
+                <option value="Traffic Inspector">
+                <option value="Volunteer Coordinator">
+                <option value="Registration Officer">
+                <option value="Data Entry Operator">
+                <option value="Control Room Operator">
+                <option value="Camp Supervisor">
+                <option value="Sanitation Supervisor">
+                <option value="River Safety Officer">
+                <option value="Disaster Response Officer">
+                <option value="IT Support Engineer">
+                <option value="Women Safety Officer">
+            </datalist>
+            {% endif %}
+
+            {% if field.name == "work" %}
+            <datalist id="work-list">
+                <option value="Crowd Control">
+                <option value="Traffic Management">
+                <option value="Security Duty">
+                <option value="Emergency Medical Services">
+                <option value="Volunteer Management">
+                <option value="Health Inspection">
+                <option value="Food Quality Inspection">
+                <option value="Pilgrim Registration">
+                <option value="Missing Person Assistance">
+                <option value="Public Guidance">
+                <option value="Water Distribution">
+                <option value="Electrical Maintenance">
+                <option value="Emergency Monitoring">
+                <option value="Women Safety">
+                <option value="Parking Management">
+                <option value="Public Relations">
+                <option value="Technical Support">
+                <option value="Digital Record Management">
+                <option value="Disaster Management">
+                <option value="Patient Care">
+                <option value="Emergency Transport">
+                <option value="Pilgrim Assistance">
+                <option value="River Patrol">
+                <option value="Boat Operations">
+                <option value="Waste Collection">
+                <option value="Waste Disposal">
+                <option value="Accommodation Management">
+                <option value="Camp Management">
+                <option value="Security Operations">
+                <option value="Emergency Treatment">
+                <option value="Fire Rescue">
+                <option value="Volunteer Deployment">
+                <option value="Vehicle Regulation">
+                <option value="Public Assistance">
+                <option value="Electrical Repair">
+                <option value="Medical Assistance">
+                <option value="Water Supply">
+                <option value="Law and Order">
+                <option value="Incident Monitoring">
+                <option value="Vehicle Parking">
+                <option value="Food Safety">
+                <option value="Emergency Response">
+                <option value="Women Assistance">
+                <option value="Network Support">
+                <option value="Camp Operations">
+                <option value="Digital Documentation">
+            </datalist>
+            {% endif %}
+            
+            {% if field.name == "state" %}
+            <datalist id="state-list">
+                <option value="Andhra Pradesh">
+                <option value="Arunachal Pradesh">
+                <option value="Assam">
+                <option value="Bihar">
+                <option value="Chhattisgarh">
+                <option value="Goa">
+                <option value="Gujarat">
+                <option value="Haryana">
+                <option value="Himachal Pradesh">
+                <option value="Jharkhand">
+                <option value="Karnataka">
+                <option value="Kerala">
+                <option value="Madhya Pradesh">
+                <option value="Maharashtra">
+                <option value="Manipur">
+                <option value="Meghalaya">
+                <option value="Mizoram">
+                <option value="Nagaland">
+                <option value="Odisha">
+                <option value="Punjab">
+                <option value="Rajasthan">
+                <option value="Sikkim">
+                <option value="Tamil Nadu">
+                <option value="Telangana">
+                <option value="Tripura">
+                <option value="Uttar Pradesh">
+                <option value="Uttarakhand">
+                <option value="West Bengal">
+                    <!-- Union Territories -->
+                <option value="Andaman and Nicobar Islands">
+                <option value="Chandigarh">
+                <option value="Dadra and Nagar Haveli and Daman and Diu">
+                <option value="Delhi">
+                <option value="Jammu and Kashmir">
+                <option value="Ladakh">
+                <option value="Lakshadweep">
+                <option value="Puducherry">
+            </datalist>
+            {% endif %}
+
+            {% if field.name == "city" %}
+            <datalist id="city-list">
+                <option value="Agartala">
+                <option value="Agra">
+                <option value="Ahmedabad">
+                <option value="Ahmednagar">
+                <option value="Aizawl">
+                <option value="Ajmer">
+                <option value="Akola">
+                <option value="Alappuzha">
+                <option value="Aligarh">
+                <option value="Allahabad (Prayagraj)">
+                <option value="Alwar">
+                <option value="Amravati">
+                <option value="Amritsar">
+                <option value="Anand">
+                <option value="Anantapur">
+                <option value="Aurangabad">
+                <option value="Ayodhya">
+                <option value="Bagalkot">
+                <option value="Balasore">
+                <option value="Ballari">
+                <option value="Banda">
+                <option value="Bangalore (Bengaluru)">
+                <option value="Bareilly">
+                <option value="Belagavi">
+                <option value="Berhampur">
+                <option value="Bhagalpur">
+                <option value="Bharatpur">
+                <option value="Bharuch">
+                <option value="Bhavnagar">
+                <option value="Bhilai">
+                <option value="Bhilwara">
+                <option value="Bhimavaram">
+                <option value="Bhiwandi">
+                <option value="Bhopal">
+                <option value="Bhubaneswar">
+                <option value="Bhuj">
+                <option value="Bidar">
+                <option value="Bijnor">
+                <option value="Bikaner">
+                <option value="Bilaspur">
+                <option value="Bokaro">
+                <option value="Bulandshahr">
+                <option value="Chandigarh">
+                <option value="Chennai">
+                <option value="Chhindwara">
+                <option value="Chittoor">
+                <option value="Coimbatore">
+                <option value="Cuttack">
+                <option value="Darbhanga">
+                <option value="Dehradun">
+                <option value="Deoghar">
+                <option value="Dewas">
+                <option value="Dhanbad">
+                <option value="Dharwad">
+                <option value="Dhule">
+                <option value="Dibrugarh">
+                <option value="Dimapur">
+                <option value="Durg">
+                <option value="Eluru">
+                <option value="Erode">
+                <option value="Faridabad">
+                <option value="Firozabad">
+                <option value="Gandhinagar">
+                <option value="Gangtok">
+                <option value="Gaya">
+                <option value="Ghaziabad">
+                <option value="Goa">
+                <option value="Gorakhpur">
+                <option value="Guntur">
+                <option value="Gurugram">
+                <option value="Guwahati">
+                <option value="Gwalior">
+                <option value="Haridwar">
+                <option value="Hisar">
+                <option value="Hubballi">
+                <option value="Hyderabad">
+                <option value="Imphal">
+                <option value="Indore">
+                <option value="Itanagar">
+                <option value="Jabalpur">
+                <option value="Jaipur">
+                <option value="Jalandhar">
+                <option value="Jalgaon">
+                <option value="Jalna">
+                <option value="Jammu">
+                <option value="Jamnagar">
+                <option value="Jamshedpur">
+                <option value="Jhansi">
+                <option value="Jodhpur">
+                <option value="Junagadh">
+                <option value="Kakinada">
+                <option value="Kalaburagi">
+                <option value="Kanchipuram">
+                <option value="Kannur">
+                <option value="Kanpur">
+                <option value="Karimnagar">
+                <option value="Karnal">
+                <option value="Kharagpur">
+                <option value="Kochi">
+                <option value="Kolhapur">
+                <option value="Kolkata">
+                <option value="Kollam">
+                <option value="Kota">
+                <option value="Kozhikode">
+                <option value="Kurnool">
+                <option value="Kurukshetra">
+                <option value="Latur">
+                <option value="Lucknow">
+                <option value="Ludhiana">
+                <option value="Madurai">
+                <option value="Malda">
+                <option value="Mangalore">
+                <option value="Mathura">
+                <option value="Meerut">
+                <option value="Moradabad">
+                <option value="Mumbai">
+                <option value="Muzaffarpur">
+                <option value="Mysuru">
+                <option value="Nagpur">
+                <option value="Nanded">
+                <option value="Nashik">
+                <option value="Navi Mumbai">
+                <option value="Noida">
+                <option value="Panaji">
+                <option value="Panipat">
+                <option value="Patiala">
+                <option value="Patna">
+                <option value="Pimpri-Chinchwad">
+                <option value="Port Blair">
+                <option value="Prayagraj">
+                <option value="Puducherry">
+                <option value="Pune">
+                <option value="Puri">
+                <option value="Raipur">
+                <option value="Rajahmundry">
+                <option value="Rajkot">
+                <option value="Ranchi">
+                <option value="Ratlam">
+                <option value="Rewa">
+                <option value="Rohtak">
+                <option value="Rourkela">
+                <option value="Sagar">
+                <option value="Salem">
+                <option value="Sambalpur">
+                <option value="Sangli">
+                <option value="Satara">
+                <option value="Shillong">
+                <option value="Shimla">
+                <option value="Shivamogga">
+                <option value="Sikar">
+                <option value="Siliguri">
+                <option value="Solapur">
+                <option value="Sonipat">
+                <option value="Srinagar">
+                <option value="Surat">
+                <option value="Thane">
+                <option value="Thanjavur">
+                <option value="Thrissur">
+                <option value="Tiruchirappalli">
+                <option value="Tirunelveli">
+                <option value="Tirupati">
+                <option value="Udaipur">
+                <option value="Ujjain">
+                <option value="Vadodara">
+                <option value="Varanasi">
+                <option value="Vasai-Virar">
+                <option value="Vellore">
+                <option value="Vijayawada">
+                <option value="Visakhapatnam">
+                <option value="Warangal">
+            </datalist>
+            {% endif %}
+
+            {% if field.name == "designation" or field.name == "work" or field.name == "state" or field.name == "city" %}
+                <small class="text-muted d-block">Type to search or select from the list.</small>
+            {% endif %}
+            
+            {% if field.help_text %}
+                <small class="text-muted d-block">{{ field.help_text }}</small>
+            {% endif %}
+
+            {% if field.errors %}
+                <div class="text-danger small">
+                    {{ field.errors }}
+                </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+
+        <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-danger">
+                Save
+            </button>
+
+            <a href="{% url 'officer_list' %}" class="btn btn-secondary">
+                Sabhi Entries Dekho
+            </a>
+        </div>
+
+    </form>
+</div>
+
+<script>
+{% if just_added %}
+setTimeout(function () {
+    document.getElementById("successToast").classList.add("d-none");
+}, 2500);
+{% endif %}
+</script>
+
+{% endblock %}

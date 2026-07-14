@@ -1,0 +1,1 @@
+web: gunicorn kumbhmela_system.wsgi:application

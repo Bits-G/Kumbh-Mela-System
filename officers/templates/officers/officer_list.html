@@ -1,0 +1,51 @@
+{% extends 'officers/base.html' %}
+{% block title %}सभी एंट्री{% endblock %}
+{% block content %}
+<h4 class="mb-3">सभी एंट्री (All Entries)</h4>
+<div class="d-flex gap-2 mb-3">
+    <a href="{% url 'officer_add' %}" class="btn btn-primary">➕ Add Entry</a>
+    <a href="{% url 'officer_import' %}" class="btn btn-success">📥 Import Entries</a>
+</div>
+<div class="table-responsive card p-3">
+<table class="table table-hover align-middle">
+    <thead>
+        <tr>
+            <th>नाम</th><th>नंबर</th><th>अधिकारी पद</th><th>राज्य</th><th>शहर</th><th>QR</th><th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for officer in page_obj %}
+        <tr>
+            <td>{{ officer.name }}</td>
+            <td>{{ officer.mobile_number }}</td>
+            <td>{{ officer.designation }}</td>
+            <td>{{ officer.state }}</td>
+            <td>{{ officer.city }}</td>
+            <td>
+                <img src="{% url 'officer_qr_code' officer.pk %}" width="50" height="50" alt="QR">
+            </td>
+            <td>
+                <a href="{% url 'officer_edit' officer.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
+                <a href="{% url 'officer_delete' officer.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                <a href="{% url 'generate_officer_pdf' officer.pk %}" target="_blank" class="btn btn-sm btn-outline-dark">PDF</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-center text-muted">कोई एंट्री नहीं मिली</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+
+<nav class="mt-3">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">पिछला</a></li>
+        {% endif %}
+        <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+        {% if page_obj.has_next %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">अगला</a></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endblock %}
