@@ -1,51 +1,512 @@
 {% extends 'officers/base.html' %}
 {% block title %}सभी एंट्री{% endblock %}
+
 {% block content %}
-<h4 class="mb-3">सभी एंट्री (All Entries)</h4>
-<div class="d-flex gap-2 mb-3">
-    <a href="{% url 'officer_add' %}" class="btn btn-primary">➕ Add Entry</a>
-    <a href="{% url 'officer_import' %}" class="btn btn-success">📥 Import Entries</a>
-</div>
-<div class="table-responsive card p-3">
-<table class="table table-hover align-middle">
-    <thead>
-        <tr>
-            <th>नाम</th><th>नंबर</th><th>अधिकारी पद</th><th>राज्य</th><th>शहर</th><th>QR</th><th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for officer in page_obj %}
-        <tr>
-            <td>{{ officer.name }}</td>
-            <td>{{ officer.mobile_number }}</td>
-            <td>{{ officer.designation }}</td>
-            <td>{{ officer.state }}</td>
-            <td>{{ officer.city }}</td>
-            <td>
-                <img src="{% url 'officer_qr_code' officer.pk %}" width="50" height="50" alt="QR">
-            </td>
-            <td>
-                <a href="{% url 'officer_edit' officer.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
-                <a href="{% url 'officer_delete' officer.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
-                <a href="{% url 'generate_officer_pdf' officer.pk %}" target="_blank" class="btn btn-sm btn-outline-dark">PDF</a>
-            </td>
-        </tr>
-        {% empty %}
-        <tr><td colspan="6" class="text-center text-muted">कोई एंट्री नहीं मिली</td></tr>
-        {% endfor %}
-    </tbody>
-</table>
+
+<style>
+    .page-title {
+        font-size: 30px;
+        font-weight: 700;
+        color: #fff;
+    }
+
+    .top-card {
+        background: linear-gradient(135deg, #ff512f, #dd2476);
+        border-radius: 18px;
+        padding: 25px;
+        color: #fff;
+        box-shadow: 0 12px 25px rgba(0, 0, 0, .18);
+        margin-bottom: 25px;
+    }
+
+    .action-buttons .btn {
+        border-radius: 12px;
+        font-weight: 600;
+        padding: 10px 18px;
+    }
+
+    .table-card {
+        border: none;
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, .12);
+    }
+
+    .table thead th {
+        background: #1f2937;
+        color: #fff;
+        border: none;
+        vertical-align: middle;
+        text-align: center;
+        white-space: nowrap;
+    }
+
+    .table tbody td {
+        vertical-align: middle;
+        text-align: center;
+    }
+
+    .table-hover tbody tr:hover {
+        background: #f8f9fa;
+        transition: .25s;
+    }
+
+    .badge-state {
+        background: #198754;
+        color: #fff;
+        padding: 7px 12px;
+        border-radius: 50px;
+    }
+
+    .badge-designation {
+        background: #0d6efd;
+        color: #fff;
+        padding: 7px 12px;
+        border-radius: 50px;
+    }
+
+    .qr-box {
+        background: #fff;
+        border-radius: 12px;
+        padding: 6px;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, .15);
+        display: inline-block;
+    }
+
+    .bulk-toolbar {
+        background: #f8f9fa;
+        border-radius: 15px;
+        padding: 15px;
+        margin-bottom: 15px;
+        border: 1px solid #e9ecef;
+    }
+
+    .delete-floating {
+        position: fixed;
+        bottom: 25px;
+        right: 25px;
+        z-index: 999;
+        border-radius: 50px;
+        padding: 12px 25px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, .25);
+    }
+</style>
+<style>
+    /* =========================== Page Background =========================== */
+    body {
+        background: #f4f7fb;
+    }
+
+    /* =========================== Card =========================== */
+    .table-card {
+        background: #fff;
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 12px 35px rgba(0, 0, 0, .08);
+    }
+
+    /* =========================== Table Header =========================== */
+    .table thead th {
+        background: linear-gradient(135deg, #0d6efd, #6610f2);
+        color: white;
+        border: none;
+        text-align: center;
+        vertical-align: middle;
+        font-size: 15px;
+        letter-spacing: .4px;
+    }
+
+    /* =========================== QR =========================== */
+    .table img {
+        border-radius: 10px;
+        border: 2px solid #dee2e6;
+        transition: .3s;
+    }
+
+    .table img:hover {
+        transform: scale(1.2);
+        border-color: #0d6efd;
+    }
+
+    /* =========================== Buttons =========================== */
+    .btn {
+        border-radius: 30px;
+        transition: .3s;
+        font-weight: 600;
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+    }
+
+    /* =========================== Dropdown =========================== */
+    .dropdown-menu {
+        border-radius: 15px;
+        border: none;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, .18);
+    }
+
+    .dropdown-item {
+        padding: 10px 18px;
+    }
+
+    .dropdown-item:hover {
+        background: #f3f8ff;
+    }
+
+    /* =========================== Pagination =========================== */
+    .pagination .page-link {
+        border-radius: 10px;
+        margin: 0 4px;
+    }
+
+    .pagination .active .page-link {
+        background: #0d6efd;
+        border-color: #0d6efd;
+    }
+
+    /* =========================== Delete Button =========================== */
+    .delete-btn {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 999;
+        border-radius: 50px;
+        padding: 15px 28px;
+        box-shadow: 0 10px 25px rgba(220, 53, 69, .35);
+    }
+
+    /* =========================== Search Counter =========================== */
+    .counter-box {
+        background: white;
+        border-radius: 15px;
+        padding: 12px 20px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, .08);
+    }
+
+    /* =========================== Sticky Header =========================== */
+    .table-responsive {
+        max-height: 700px;
+    }
+
+    thead {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+    }
+
+    /* =========================== Scrollbar =========================== */
+    ::-webkit-scrollbar {
+        width: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: #0d6efd;
+        border-radius: 20px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: #f2f2f2;
+    }
+</style>
+
+<script>
+    //=========================== // Live Search //=========================== 
+    document.addEventListener("DOMContentLoaded", function () { 
+        const search = document.getElementById("tableSearch"); 
+        if (search) { 
+            search.addEventListener("keyup", function () { 
+                let value = this.value.toLowerCase(); 
+                let rows = document.querySelectorAll("tbody tr"); rows.forEach(function (row) { 
+                    row.style.display = row.innerText.toLowerCase().includes(value) ? "" : "none"; 
+                    }
+                ); 
+                }
+            ); 
+        } });
+</script>
+
+<!-- Top Header -->
+<div class="top-card">
+
+    <div class="d-flex justify-content-between align-items-center">
+
+        <div>
+
+            <h2 class="page-title">
+                🕉️ Kumbh Mela Officer Management
+            </h2>
+
+            <p>Manage all registered officers efficiently.</p>
+
+        </div>
+        <h4 class="mb-3">सभी एंट्री (All Entries)</h4>
+        <div>
+
+            <h3>{{ page_obj.paginator.count }}</h3>
+
+            <small>Total Officers</small>
+
+        </div>
+
+    </div>
+
+<div class="row mb-4">
+
+    <div class="col-md-8">
+
+        <input type="text"
+               id="tableSearch"
+               class="form-control form-control-lg shadow-sm"
+               placeholder="🔍 Search by Name, Mobile, Designation, State, City...">
+
+    </div>
+
 </div>
 
-<nav class="mt-3">
-    <ul class="pagination justify-content-center">
+<div class="d-flex gap-2 mb-3">
+    <a href="{% url 'officer_add' %}" class="btn btn-primary">
+        ➕ Add Entry
+    </a>
+
+    <a href="{% url 'officer_import' %}" class="btn btn-success">
+        📥 Import Entries
+    </a>
+
+    <a href="{% url 'officer_export' %}" class="btn btn-success">
+        📤 Share All Entries
+    </a>
+    
+</div>
+<form method="POST" action="{% url 'delete_selected_officers' %}">
+    {% csrf_token %}
+<div class="table-responsive">
+    <table class="table table-hover table-bordered align-middle">
+    <thead class="table-dark">
+        <tr>
+            <th>नाम</th>
+            <th>नंबर</th>
+            <th>अधिकारी पद</th>
+            <th>राज्य</th>
+            <th>शहर</th>
+            <th>QR</th>
+            <th style="min-width:420px;">Actions</th>
+            <th width="120" style="text-align: right;">Select All
+                <input type="checkbox" id="select-all">
+            </th>
+        </tr>
+    </thead>
+<style>
+    body {
+
+        background: #f4f7fb;
+
+    }
+
+    .top-card {
+
+        background: linear-gradient(135deg, #ff512f, #dd2476);
+
+        color: white;
+
+        border-radius: 20px;
+
+        padding: 25px;
+
+    }
+
+    .page-title {
+
+        font-size: 32px;
+
+        font-weight: bold;
+
+    }
+
+    .action-buttons .btn {
+
+        border-radius: 12px;
+
+        margin-right: 10px;
+
+    }
+
+    .table-card {
+
+        background: white;
+
+        border-radius: 20px;
+
+        box-shadow: 0 10px 30px rgba(0, 0, 0, .12);
+
+    }
+
+    .table thead {
+
+        background: linear-gradient(90deg, #0d6efd, #6610f2);
+
+    }
+
+    .table thead th {
+
+        color: white;
+
+    }
+
+    .dropdown-menu {
+
+        border-radius: 15px;
+
+    }
+
+    .pagination .page-link {
+        border-radius: 10px;
+        margin: 0 4px;
+        font-weight: 600;
+        transition: 0.3s;
+    }
+
+    .pagination .page-link:hover {
+        background: #0d6efd;
+        color: #fff;
+    }
+
+    .pagination .page-item.disabled .page-link {
+        background: #f8f9fa;
+        color: #212529;
+        border: 1px solid #dee2e6;
+        font-weight: bold;
+    }
+</style>
+
+    </div>
+        <tbody>
+
+            {% for officer in page_obj %}
+
+            <tr>
+                <td>{{ officer.name }}</td>
+                <td>{{ officer.mobile_number }}</td>
+                <td>{{ officer.designation }}</td>
+                <td>{{ officer.state }}</td>
+                <td>{{ officer.city }}</td>
+                <td class="text-center">
+                    <img src="{% url 'officer_qr_code' officer.pk %}" width="" height="55" alt="QR">
+                </td>
+        <td class="text-nowrap">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+
+        <!-- Share -->
+        <div class="dropdown">
+            <button class="btn btn-sm btn-outline-success dropdown-toggle" type="button"data-bs-toggle="dropdown"><i class="bi bi-share-fill"></i> Share </button>
+            <ul class="dropdown-menu">
+                <li>
+                    <a class="dropdown-item" href="https://wa.me/?text={{ officer.name|urlencode }}%20-%20{{ officer.designation|urlencode }}%0APDF:%20{{ request.scheme }}://{{ request.get_host }}{% url 'generate_officer_pdf' officer.pk %}"target="_blank"><i class="bi bi-whatsapp text-success"></i> WhatsApp</a>
+                </li>
+                <li>
+                    <a class="dropdown-item" href="sms:?body={{ officer.name|urlencode }}%20Details:%20{{ request.scheme }}://{{ request.get_host }}{% url 'generate_officer_pdf' officer.pk %}"><i class="bi bi-chat-dots text-primary"></i> SMS</a>
+                </li>
+                <li>
+                    <a class="dropdown-item" href="{% url 'generate_officer_pdf' officer.pk %}"target="_blank"><i class="bi bi-file-earmark-pdf text-danger"></i> View / Download PDF</a>
+                </li>
+            </ul>
+        </div>
+            <a href="{% url 'officer_edit' officer.pk %}" class="btn btn-sm btn-outline-primary">Edit</a> 
+            <a href="{% url 'officer_delete' officer.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
+            <a href="{% url 'generate_officer_pdf' officer.pk %}" target="_blank"class="btn btn-sm btn-outline-dark">PDF</a>
+        </div>
+        <td>
+            <input type="checkbox" class="row-checkbox" name="selected_ids" value="{{ officer.id }}">
+        </td>
+        </td>
+        </tr>
+
+            {% empty %}
+
+            <tr>
+                <td colspan="7" class="text-center text-muted">
+                    कोई एंट्री नहीं मिली
+                </td>
+            </tr>
+
+            {% endfor %}
+
+        <script>
+            document.getElementById("select-all").addEventListener("change", function () {
+
+                document.querySelectorAll(".row-checkbox").forEach(function (cb) {
+                    cb.checked = document.getElementById("select-all").checked;
+                });
+
+            });
+        </script>
+        </tbody>
+
+    </table>
+    <button class="btn btn-danger mt-3" style="position: fixed; bottom: 20px; right: 20px;" type="submit"
+            onclick="return confirm('Selected entries delete karna chahte hain?')">🗑 Delete Selected
+    </button>
+    </form>
+</div>
+
+<nav class="mt-4">
+    <ul class="pagination justify-content-center align-items-center">
+
+        <!-- First & Previous -->
         {% if page_obj.has_previous %}
-        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">पिछला</a></li>
+        <li class="page-item">
+            <a class="page-link" href="?page=1">
+                ⏮ First
+            </a>
+        </li>
+
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">
+                ◀ Previous
+            </a>
+        </li>
         {% endif %}
-        <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+
+        <!-- Page Number -->
+        <li class="page-item disabled">
+            <span class="page-link fw-bold">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </span>
+        </li>
+
+        <!-- Next & Last -->
         {% if page_obj.has_next %}
-        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">अगला</a></li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}">
+                Next ▶
+            </a>
+        </li>
+
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">
+                Last ⏭
+            </a>
+        </li>
         {% endif %}
+
     </ul>
 </nav>
+
+<!-- Select All Script --> 
+<script> 
+ const selectAll=document.getElementById("select-all"); 
+ const checkboxes=document.querySelectorAll(".row-checkbox"); 
+ selectAll.addEventListener("change",function(){ 
+    checkboxes.forEach(cb=>{ 
+        cb.checked=this.checked; 
+        }); 
+        }); 
+        checkboxes.forEach(cb=>{ cb.addEventListener("change",function(){ 
+            const total=checkboxes.length; 
+            const checked=document.querySelectorAll(".row-checkbox:checked").length; 
+            selectAll.checked=(total===checked); 
+            }); 
+    }
+    ); 
+</script>
 {% endblock %}

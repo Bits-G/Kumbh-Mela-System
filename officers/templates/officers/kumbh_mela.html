@@ -1,32 +1,64 @@
 {% extends 'officers/base.html' %}
-{% block title %}Kumbh Mela Dashboard{% endblock %}
+{% block title %}Dashboard{% endblock %}
 {% block content %}
-<div class="text-center mb-4">
-    <h2>🕉️ Kumbh Mela — Officer Directory System</h2>
-    <p class="text-muted">कुल एंट्री: <strong>{{ total_officers }}</strong></p>
+
+<style>
+    .stat-card {
+        border-radius: 12px;
+        padding: 20px;
+        color: white;
+        text-decoration: none;
+        display: block;
+        margin-bottom: 16px;
+        transition: transform 0.15s ease;
+    }
+    .stat-card:hover {
+        transform: translateY(-3px);
+        color: white;
+        text-decoration: none;
+    }
+    .stat-card .count { font-size: 2.2rem; font-weight: 700; margin: 8px 0; }
+    .stat-card .label { font-size: 0.95rem; opacity: 0.9; }
+    .stat-card .view-link { font-size: 0.8rem; opacity: 0.85; margin-top: 8px; display: inline-block; }
+</style>
+
+<h4 class="mb-1">Overview / एकूण माहिती</h4>
+<p class="text-muted mb-3">Click any card to view filtered member directory</p>
+
+<div class="row">
+    <div class="col-md-4">
+        <a href="{% url 'officer_list' %}" class="stat-card" style="background: linear-gradient(135deg, #f39c12, #e67e22);">
+            <div class="label">TOTAL MEMBERS / एकूण सदस्य</div>
+            <div class="count">{{ total_officers }}</div>
+            <div class="view-link">VIEW DIRECTORY →</div>
+        </a>
+    </div>
+    {% for item in govt_level_counts %}
+    <div class="col-md-4">
+        <a href="{% url 'officer_list' %}?govt_level={{ item.value }}" class="stat-card"
+           style="background: {% cycle '#2980b9' '#27ae60' %};">
+            <div class="label">{{ item.label|upper }}</div>
+            <div class="count">{{ item.count }}</div>
+            <div class="view-link">VIEW DIRECTORY →</div>
+        </a>
+    </div>
+    {% endfor %}
 </div>
 
-<div class="row g-4">
-    <div class="col-md-4">
-        <div class="card p-4 text-center">
-            <i class="bi bi-person-plus-fill fs-1 text-danger"></i>
-            <h5 class="mt-2">नई एंट्री जोड़ें</h5>
-            <a href="{% url 'officer_add' %}" class="btn btn-danger mt-2">Add Entry</a>
-        </div>
+<h4 class="mb-1 mt-4">Division-wise Insights / विभागवार माहिती</h4>
+<p class="text-muted mb-3">Each card shows member count for that division</p>
+
+<div class="row">
+    {% for item in division_counts %}
+    <div class="col-md-6">
+        <a href="{% url 'officer_list' %}?division={{ item.value }}" class="stat-card"
+           style="background: {% cycle '#2980b9' '#27ae60' '#6c757d' '#e67e22' '#c0392b' '#16a085' as division_colors %};">
+            <div class="label">{{ item.label|upper }}</div>
+            <div class="count">{{ item.count }}</div>
+            <div class="view-link">VIEW DIRECTORY →</div>
+        </a>
     </div>
-    <div class="col-md-4">
-        <div class="card p-4 text-center">
-            <i class="bi bi-list-ul fs-1 text-primary"></i>
-            <h5 class="mt-2">सभी एंट्री देखें</h5>
-            <a href="{% url 'officer_list' %}" class="btn btn-primary mt-2">View All</a>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card p-4 text-center">
-            <i class="bi bi-search fs-1 text-success"></i>
-            <h5 class="mt-2">खोजें (Search)</h5>
-            <a href="{% url 'search_officers' %}" class="btn btn-success mt-2">Search</a>
-        </div>
-    </div>
+    {% endfor %}
 </div>
+
 {% endblock %}

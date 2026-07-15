@@ -17,7 +17,7 @@
 #         }
 
 from django import forms
-from .models import Officer
+from .models import Officer, DIVISION_CHOICES, GOVT_LEVEL_CHOICES
 
 DESIGNATION_CHOICES = [
     ("", "Select Designation"),
@@ -174,21 +174,21 @@ class OfficerForm(forms.ModelForm):
     })
 )
 
-    state = forms.ChoiceField(
+    state = forms.CharField(
         widget=forms.TextInput(attrs={
             'class': 'form-control',
             'list': 'state-list',
             'placeholder': 'Search or Enter state'})
     )
     
-    city = forms.ChoiceField(
+    city = forms.CharField(
         widget=forms.TextInput(attrs={
             'class': 'form-control',
             'list': 'city-list',
             'placeholder': 'Search or Enter city'})
     )
 
-    work = forms.ChoiceField(
+    work = forms.CharField(
         # choices=WORK_CHOICES,
         widget=forms.TextInput(attrs={
             'class': 'form-control',
@@ -197,9 +197,21 @@ class OfficerForm(forms.ModelForm):
         })
     )
 
+    division = forms.ChoiceField(
+        choices=[("", "Select Division")] + DIVISION_CHOICES,
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+
+    government_level = forms.ChoiceField(
+        choices=[("", "Select Govt Level")] + GOVT_LEVEL_CHOICES,
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+
     class Meta:
         model = Officer
-        fields = ['name', 'mobile_number', 'designation', 'state', 'city', 'address', 'work']
+        fields = ['name', 'mobile_number', 'designation', 'state', 'city', 'address', 'work', 'division', 'government_level']
 
         widgets = {
             'name': forms.TextInput(attrs={

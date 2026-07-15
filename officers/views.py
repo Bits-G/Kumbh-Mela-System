@@ -144,35 +144,20 @@ import qrcode
 import base64
 from io import BytesIO
 from urllib.parse import urlencode
-
-
+from openpyxl import Workbook
 
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
-
 from django.contrib.auth.decorators import login_required
-
 from django.contrib import messages
-
 from django.shortcuts import render, redirect, get_object_or_404
-
 from django.db.models import Q
-
 from django.http import HttpResponse
-
 from django.core.paginator import Paginator
-
 from django.template.loader import render_to_string
-
 from django.urls import reverse
-
 from openpyxl import load_workbook
-
-
-
 from .models import Officer
-
 from .forms import OfficerForm
-
 
 
 
@@ -223,32 +208,73 @@ def admin_logout(request):
 
 
 
-@login_required
+# @login_required
 
+# def kumbh_mela_dashboard(request):
+
+#     total_officers = Officer.objects.count()
+
+#     return render(request, 'officers/kumbh_mela.html', {'total_officers': total_officers})
+
+@login_required
 def kumbh_mela_dashboard(request):
+    from .models import DIVISION_CHOICES, GOVT_LEVEL_CHOICES
 
     total_officers = Officer.objects.count()
 
-    return render(request, 'officers/kumbh_mela.html', {'total_officers': total_officers})
+    govt_level_counts = []
+    for value, label in GOVT_LEVEL_CHOICES:
+        count = Officer.objects.filter(government_level=value).count()
+        govt_level_counts.append({'value': value, 'label': label, 'count': count})
+
+    division_counts = []
+    for value, label in DIVISION_CHOICES:
+        count = Officer.objects.filter(division=value).count()
+        division_counts.append({'value': value, 'label': label, 'count': count})
+
+    return render(request, 'officers/kumbh_mela.html', {
+        'total_officers': total_officers,
+        'govt_level_counts': govt_level_counts,
+        'division_counts': division_counts,
+    })
 
 
 
 
+# @login_required
+
+# def officer_list(request):
+
+#     officers = Officer.objects.all()
+
+#     paginator = Paginator(officers, 25)
+
+#     page_number = request.GET.get('page')
+
+#     page_obj = paginator.get_page(page_number)
+
+#     return render(request, 'officers/officer_list.html', {'page_obj': page_obj})
 
 @login_required
-
 def officer_list(request):
-
     officers = Officer.objects.all()
 
+    division_filter = request.GET.get('division')
+    govt_level_filter = request.GET.get('govt_level')
+
+    if division_filter:
+        officers = officers.filter(division=division_filter)
+    if govt_level_filter:
+        officers = officers.filter(government_level=govt_level_filter)
+
     paginator = Paginator(officers, 25)
-
     page_number = request.GET.get('page')
-
     page_obj = paginator.get_page(page_number)
-
-    return render(request, 'officers/officer_list.html', {'page_obj': page_obj})
-
+    return render(request, 'officers/officer_list.html', {
+        'page_obj': page_obj,
+        'division_filter': division_filter,
+        'govt_level_filter': govt_level_filter,
+    })
 
 
 
@@ -629,3 +655,104 @@ def search_results_qr(request):
     qr.save(buffer, format='PNG')
 
     return HttpResponse(buffer.getvalue(), content_type='image/png')
+
+
+
+
+def officer_export_csv(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="officers.csv"'
+
+    writer = csv.writer(response)
+
+    writer.writerow([
+        'name',
+        'mobile_number',
+        'designation',
+        'city',
+        'state',
+        'address',
+        'work'
+    ])
+
+    for officer in Officer.objects.all():
+        writer.writerow([
+            officer.name,
+            officer.mobile_number,
+            officer.designation,
+            officer.city,
+            officer.state,
+            officer.address,
+            officer.work
+        ])
+
+    return response
+
+def officer_export(request):
+    return render(request, 'officers/officer_export.html')
+
+def officer_export_excel(request):
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Officers"
+
+    ws.append([
+        'name',
+        'mobile_number',
+        'designation',
+        'city',
+        'state',
+        'address',
+        'work'
+    ])
+
+    for officer in Officer.objects.all():
+        ws.append([
+            officer.name,
+            officer.mobile_number,
+            officer.designation,
+            officer.city,
+            officer.state,
+            officer.address,
+            officer.work
+        ])
+
+    response = HttpResponse(
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+
+    response['Content-Disposition'] = 'attachment; filename=officers.xlsx'
+
+    wb.save(response)
+
+    return response
+
+from django.contrib import messages
+from django.shortcuts import redirect
+from .models import Officer
+
+@login_required
+def delete_selected_officers(request):
+
+    if request.method == "POST":
+
+        ids = request.POST.getlist("selected_ids")
+
+        if ids:
+
+            Officer.objects.filter(id__in=ids).delete()
+
+            messages.success(
+                request,
+                f"{len(ids)} Entries deleted successfully."
+            )
+
+        else:
+
+            messages.warning(
+                request,
+                "Please select at least one entry."
+            )
+
+    return redirect("officer_list")

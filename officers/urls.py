@@ -33,7 +33,11 @@ urlpatterns = [
     path('officers/<int:pk>/pdf/', views.generate_officer_pdf, name='generate_officer_pdf'),
     path('officers/<int:pk>/qr/', views.officer_qr_code, name='officer_qr_code'),
     path('officers/import/', views.officer_import, name='officer_import'),
+    path('officers/export/', views.officer_export, name='officer_export'),
+    path('export/csv/', views.officer_export_csv, name='officer_export_csv'),
+    path('export/excel/', views.officer_export_excel, name='officer_export_excel'),
     path('search/', views.search_officers, name='search_officers'),
     path('search/pdf/', views.search_results_pdf, name='search_results_pdf'),
     path('search/qr/', views.search_results_qr, name='search_results_qr'),
+    path("delete-selected/", views.delete_selected_officers,name="delete_selected_officers"),
 ]
