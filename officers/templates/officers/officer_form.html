@@ -12,7 +12,7 @@
 <div class="card p-4 shadow" style="max-width:600px; margin:auto;">
     <h4 class="mb-3 text-center">{{ action }} एंट्री</h4>
 
-    <form method="post">
+    <form method="post" enctype="multipart/form-data" class="card p-4">
         {% csrf_token %}
 
         {% for field in form %}
@@ -37,6 +37,26 @@
                 <option value="Disaster Response Officer">
                 <option value="IT Support Engineer">
                 <option value="Women Safety Officer">
+            </datalist>
+            {% endif %}
+
+            {% if field.name == "category" %}
+            <datalist id="category-list">
+                <option value="Open (General)">
+                <option value="EWS (Economically Weaker Section)">
+                <option value="OBC (Other Backward Class)">
+                <option value="SBC (Special Backward Class)">
+                <option value="SEBC (Socially and Educationally Backward Class)">
+                <option value="SC (Scheduled Caste)">
+                <option value="ST (Scheduled Tribe)">
+                <option value="VJ (Vimukta Jati)">
+                <option value="NT-A (Nomadic Tribe A)">
+                <option value="NT-B (Nomadic Tribe B)">
+                <option value="NT-C (Nomadic Tribe C)">
+                <option value="NT-D (Nomadic Tribe D)">
+                <option value="General">
+                <option value="Minority">
+                <option value="Other">
             </datalist>
             {% endif %}
 
@@ -343,6 +363,54 @@ setTimeout(function () {
     document.getElementById("successToast").classList.add("d-none");
 }, 2500);
 {% endif %}
+</script>
+
+<script>
+    const subTypeMap = {{ sub_type_map_json|safe }};
+    const subSubTypeMap = {{ sub_sub_type_map_json|safe }};
+
+    function populateSelect(selectEl, optionsList, placeholder) {
+        selectEl.innerHTML = '';
+        const defaultOption = document.createElement('option');
+        defaultOption.value = '';
+        defaultOption.textContent = placeholder;
+        selectEl.appendChild(defaultOption);
+        optionsList.forEach(([value, label]) => {
+            const opt = document.createElement('option');
+            opt.value = value;
+            opt.textContent = label;
+            selectEl.appendChild(opt);
+        });
+    }
+
+    function updateSubType(selectedSubType, selectedSubSubType) {
+        const mainType = document.getElementById('id_main_type').value;
+        const subTypeSelect = document.getElementById('id_sub_type');
+        const options = subTypeMap[mainType] || [];
+        populateSelect(subTypeSelect, options, 'Select Sub Type');
+        if (selectedSubType) subTypeSelect.value = selectedSubType;
+        updateSubSubType(selectedSubSubType);
+    }
+
+    function updateSubSubType(selectedSubSubType) {
+        const subType = document.getElementById('id_sub_type').value;
+        const subSubTypeSelect = document.getElementById('id_sub_sub_type');
+        const options = subSubTypeMap[subType] || [];
+        populateSelect(subSubTypeSelect, options, 'Select Sub-Sub Type');
+        if (selectedSubSubType) subSubTypeSelect.value = selectedSubSubType;
+    }
+
+    document.getElementById('id_main_type').addEventListener('change', () => updateSubType());
+    document.getElementById('id_sub_type').addEventListener('change', () => updateSubSubType());
+
+    // Edit mode mein already-saved values ko restore karo
+    window.addEventListener('DOMContentLoaded', () => {
+        const currentSubType = "{{ form.instance.sub_type|default:'' }}";
+        const currentSubSubType = "{{ form.instance.sub_sub_type|default:'' }}";
+        if (document.getElementById('id_main_type').value) {
+            updateSubType(currentSubType, currentSubSubType);
+        }
+    });
 </script>
 
 {% endblock %}

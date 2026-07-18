@@ -16,7 +16,11 @@
         padding: 25px;
         color: #fff;
         box-shadow: 0 12px 25px rgba(0, 0, 0, .18);
-        margin-bottom: 25px;
+        margin-bottom: 2px;
+        width: fit-content;
+        width:115%;
+        margin:auto;
+        transform:translateX(-95px);
     }
 
     .action-buttons .btn {
@@ -186,18 +190,18 @@
 
     /* =========================== Sticky Header =========================== */
     .table-responsive {
-        max-height: 700px;
+        max-height: 1000px;
     }
 
     thead {
         position: sticky;
         top: 0;
-        z-index: 100;
+        z-index: 1000;
     }
 
     /* =========================== Scrollbar =========================== */
     ::-webkit-scrollbar {
-        width: 10px;
+        width: 5px;
     }
 
     ::-webkit-scrollbar-thumb {
@@ -234,7 +238,7 @@
         <div>
 
             <h2 class="page-title">
-                🕉️ Kumbh Mela Officer Management
+                🕉️ Directory Management
             </h2>
 
             <p>Manage all registered officers efficiently.</p>
@@ -284,14 +288,20 @@
     <table class="table table-hover table-bordered align-middle">
     <thead class="table-dark">
         <tr>
-            <th>नाम</th>
-            <th>नंबर</th>
-            <th>अधिकारी पद</th>
-            <th>राज्य</th>
-            <th>शहर</th>
-            <th>QR</th>
-            <th style="min-width:420px;">Actions</th>
-            <th width="120" style="text-align: right;">Select All
+            <th>Sr.No.</th>
+            <th>Name</th>
+            <th>Dept.</th>
+            <th>Designation</th>
+            <th>Category</th>
+            <th>Sub-Category</th>
+            <th>Contact 1</th>
+            <th>Contact 2</th>
+            <th>Email</th>
+            <th>Office Ph.</th>
+            <th>PBX Ext.</th>
+            <th>Photo</th>
+            <th>Actions</th>
+            <th width="120" style="text-align: center;">Select All
                 <input type="checkbox" id="select-all">
             </th>
         </tr>
@@ -381,57 +391,39 @@
 
     </div>
         <tbody>
-
-            {% for officer in page_obj %}
-
-            <tr>
-                <td>{{ officer.name }}</td>
-                <td>{{ officer.mobile_number }}</td>
-                <td>{{ officer.designation }}</td>
-                <td>{{ officer.state }}</td>
-                <td>{{ officer.city }}</td>
-                <td class="text-center">
-                    <img src="{% url 'officer_qr_code' officer.pk %}" width="" height="55" alt="QR">
-                </td>
-        <td class="text-nowrap">
-            <div class="d-flex align-items-center gap-2 flex-wrap">
-
-        <!-- Share -->
-        <div class="dropdown">
-            <button class="btn btn-sm btn-outline-success dropdown-toggle" type="button"data-bs-toggle="dropdown"><i class="bi bi-share-fill"></i> Share </button>
-            <ul class="dropdown-menu">
-                <li>
-                    <a class="dropdown-item" href="https://wa.me/?text={{ officer.name|urlencode }}%20-%20{{ officer.designation|urlencode }}%0APDF:%20{{ request.scheme }}://{{ request.get_host }}{% url 'generate_officer_pdf' officer.pk %}"target="_blank"><i class="bi bi-whatsapp text-success"></i> WhatsApp</a>
-                </li>
-                <li>
-                    <a class="dropdown-item" href="sms:?body={{ officer.name|urlencode }}%20Details:%20{{ request.scheme }}://{{ request.get_host }}{% url 'generate_officer_pdf' officer.pk %}"><i class="bi bi-chat-dots text-primary"></i> SMS</a>
-                </li>
-                <li>
-                    <a class="dropdown-item" href="{% url 'generate_officer_pdf' officer.pk %}"target="_blank"><i class="bi bi-file-earmark-pdf text-danger"></i> View / Download PDF</a>
-                </li>
-            </ul>
-        </div>
-            <a href="{% url 'officer_edit' officer.pk %}" class="btn btn-sm btn-outline-primary">Edit</a> 
+    {% for officer in page_obj %}
+    <tr>
+        <td>{{ forloop.counter0|add:page_obj.start_index }}</td>
+        <td>{{ officer.name }}</td>
+        <td>{{ officer.department|default:"-" }}</td>
+        <td>{{ officer.designation }}</td>
+        <td>{{ officer.category|default:"-" }}</td>
+        <td>{{ officer.sub_category|default:"-" }}</td>
+        <td>{{ officer.mobile_number }}</td>
+        <td>{{ officer.contact_2|default:"-" }}</td>
+        <td>{{ officer.email|default:"-" }}</td>
+        <td>{{ officer.office_phone|default:"-" }}</td>
+        <td>{{ officer.pbx_extension|default:"-" }}</td>
+        <td>
+            {% if officer.photo %}
+                <img src="{{ officer.photo.url }}" width="40" height="40" style="object-fit: cover; border-radius: 4px;">
+            {% else %}
+                -
+            {% endif %}
+        </td>
+        <td>
+            <a href="{% url 'officer_edit' officer.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
             <a href="{% url 'officer_delete' officer.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
-            <a href="{% url 'generate_officer_pdf' officer.pk %}" target="_blank"class="btn btn-sm btn-outline-dark">PDF</a>
-        </div>
+            <a href="{% url 'generate_officer_pdf' officer.pk %}" target="_blank" class="btn btn-sm btn-outline-dark">PDF</a>
+        </td>
         <td>
             <input type="checkbox" class="row-checkbox" name="selected_ids" value="{{ officer.id }}">
         </td>
-        </td>
-        </tr>
-
-            {% empty %}
-
-            <tr>
-                <td colspan="7" class="text-center text-muted">
-                    कोई एंट्री नहीं मिली
-                </td>
-            </tr>
-
-            {% endfor %}
-
-        <script>
+    </tr>
+    {% empty %}
+    <tr><td colspan="13" class="text-center text-muted">कोई एंट्री नहीं मिली</td></tr>
+    {% endfor %}
+    <script>
             document.getElementById("select-all").addEventListener("change", function () {
 
                 document.querySelectorAll(".row-checkbox").forEach(function (cb) {
@@ -439,8 +431,8 @@
                 });
 
             });
-        </script>
-        </tbody>
+    </script>
+</tbody>
 
     </table>
     <button class="btn btn-danger mt-3" style="position: fixed; bottom: 20px; right: 20px;" type="submit"

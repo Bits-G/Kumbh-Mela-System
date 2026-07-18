@@ -10,7 +10,7 @@
         text-decoration: none;
         display: block;
         margin-bottom: 16px;
-        transition: transform 0.15s ease;
+        transition: transform 0.15s ease, box-shadow 0.3s ease;
     }
     .stat-card:hover {
         transform: translateY(-3px);
@@ -20,6 +20,17 @@
     .stat-card .count { font-size: 2.2rem; font-weight: 700; margin: 8px 0; }
     .stat-card .label { font-size: 0.95rem; opacity: 0.9; }
     .stat-card .view-link { font-size: 0.8rem; opacity: 0.85; margin-top: 8px; display: inline-block; }
+
+    .stat-card.glow {
+        box-shadow: 0 0 25px 6px rgba(255, 215, 0, 0.85);
+        animation: glowPulse 1.6s ease-in-out infinite alternate;
+    }
+    @keyframes glowPulse {
+        from { box-shadow: 0 0 15px 3px rgba(255, 215, 0, 0.6); }
+        to { box-shadow: 0 0 30px 8px rgba(255, 215, 0, 0.95); }
+    }
+
+    .entries-mini-table td, .entries-mini-table th { padding: 8px 10px; }
 </style>
 
 <h4 class="mb-1">Overview / एकूण माहिती</h4>
@@ -45,6 +56,88 @@
     {% endfor %}
 </div>
 
+<h4 class="mb-1 mt-4" id="classification-section">Classification / वर्गीकरण</h4>
+<p class="text-muted mb-3">Click a card to drill down further</p>
+
+<div class="row">
+    {% for item in main_type_counts %}
+    <div class="col-md-3">
+        <a href="{% url 'kumbh_mela_dashboard' %}?main={{ item.value }}#classification-section"
+           class="stat-card main-type-card" data-value="{{ item.value }}"
+           style="background: {% cycle '#8e44ad' '#2c3e50' '#d35400' '#7f8c8d' as main_colors %};">
+            <div class="label">{{ item.label|upper }}</div>
+            <div class="count">{{ item.count }}</div>
+            <div class="view-link">DEKHO SUB-TYPES →</div>
+        </a>
+    </div>
+    {% endfor %}
+</div>
+
+{% if selected_main %}
+<div class="mb-3">
+    <a href="{% url 'officer_list' %}?main_type={{ selected_main }}" class="btn btn-sm btn-outline-dark">
+        📋 {{ selected_main|upper }} ke sabhi entries dekho (poori list)
+    </a>
+</div>
+{% endif %}
+
+{% if sub_type_counts %}
+<h5 class="mb-3 mt-3">Sub-Types of {{ selected_main|upper }}</h5>
+<div class="row">
+    {% for item in sub_type_counts %}
+    <div class="col-md-4">
+        <a href="{% url 'kumbh_mela_dashboard' %}?main={{ selected_main }}&sub={{ item.value }}#classification-section"
+           class="stat-card sub-type-card" data-value="{{ item.value }}"
+           style="background: {% cycle '#16a085' '#2980b9' '#e67e22' as sub_colors %};">
+            <div class="label">{{ item.label|upper }}</div>
+            <div class="count">{{ item.count }}</div>
+            <div class="view-link">DEKHO DETAILS →</div>
+        </a>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if sub_sub_type_counts %}
+<h5 class="mb-3 mt-3">Details</h5>
+<div class="row">
+    {% for item in sub_sub_type_counts %}
+    <div class="col-md-3">
+        <a href="{% url 'officer_list' %}?main_type={{ selected_main }}&sub_type={{ selected_sub }}&sub_sub_type={{ item.value }}" class="stat-card"
+           style="background: {% cycle '#c0392b' '#27ae60' '#2980b9' '#f39c12' as leaf_colors %};">
+            <div class="label">{{ item.label|upper }}</div>
+            <div class="count">{{ item.count }}</div>
+            <div class="view-link">VIEW DIRECTORY →</div>
+        </a>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if matching_entries %}
+<h5 class="mb-3 mt-4">Matching Entries (top 15)</h5>
+<div class="table-responsive card p-3 mb-4">
+    <table class="table table-sm table-hover entries-mini-table">
+        <thead>
+            <tr><th>Name</th><th>Designation</th><th>Mobile</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+            {% for officer in matching_entries %}
+            <tr>
+                <td>{{ officer.name }}</td>
+                <td>{{ officer.designation }}</td>
+                <td>{{ officer.mobile_number }}</td>
+                <td>
+                    <a href="{% url 'officer_edit' officer.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
+                    <a href="{% url 'generate_officer_pdf' officer.pk %}" target="_blank" class="btn btn-sm btn-outline-dark">PDF</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
 <h4 class="mb-1 mt-4">Division-wise Insights / विभागवार माहिती</h4>
 <p class="text-muted mb-3">Each card shows member count for that division</p>
 
@@ -60,5 +153,29 @@
     </div>
     {% endfor %}
 </div>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const selectedMain = urlParams.get('main');
+    const selectedSub = urlParams.get('sub');
+
+    if (selectedMain) {
+        document.querySelectorAll('.main-type-card').forEach(card => {
+            if (card.dataset.value === selectedMain) card.classList.add('glow');
+        });
+    }
+    if (selectedSub) {
+        document.querySelectorAll('.sub-type-card').forEach(card => {
+            if (card.dataset.value === selectedSub) card.classList.add('glow');
+        });
+    }
+
+    if (selectedMain) {
+        const target = document.getElementById('classification-section');
+        if (target) {
+            setTimeout(() => target.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+        }
+    }
+</script>
 
 {% endblock %}

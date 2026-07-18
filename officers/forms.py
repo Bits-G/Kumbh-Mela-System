@@ -17,7 +17,7 @@
 #         }
 
 from django import forms
-from .models import Officer, DIVISION_CHOICES, GOVT_LEVEL_CHOICES
+from .models import Officer, DIVISION_CHOICES, GOVT_LEVEL_CHOICES, MAIN_TYPE_CHOICES, SUB_TYPE_MAP, SUB_SUB_TYPE_MAP
 
 DESIGNATION_CHOICES = [
     ("", "Select Designation"),
@@ -32,6 +32,24 @@ DESIGNATION_CHOICES = [
     ("Data Entry Operator", "Data Entry Operator"),
     ("Control Room Operator", "Control Room Operator"),
     ("Camp Supervisor", "Camp Supervisor"),
+]
+
+CATEGORY_CHOICES = [
+    ("", "Select Category"),
+    ("Open (General)", "Open (General)"),
+    ("EWS", "EWS (Economically Weaker Section)"),
+    ("OBC", "OBC (Other Backward Class)"),
+    ("SEBC", "SEBC (Socially and Educationally Backward Class)"),
+    ("SBC", "SBC (Special Backward Class)"),
+    ("SC", "SC (Scheduled Caste)"),
+    ("ST", "ST (Scheduled Tribe)"),
+    ("VJ", "VJ (Vimukta Jati)"),
+    ("NT-A", "NT-A (Nomadic Tribe A)"),
+    ("NT-B", "NT-B (Nomadic Tribe B)"),
+    ("NT-C", "NT-C (Nomadic Tribe C)"),
+    ("NT-D", "NT-D (Nomadic Tribe D)"),
+    ("Minority", "Minority"),
+    ("Other", "Other"),
 ]
 
 STATE_CHOICES = [
@@ -163,6 +181,19 @@ WORK_CHOICES = [
     ("IT Support", "IT Support"),
 ]
 
+def _flatten_choices(choice_map):
+    seen = set()
+    flat = []
+    for options in choice_map.values():
+        for value, label in options:
+            if value not in seen:
+                seen.add(value)
+                flat.append((value, label))
+    return flat
+
+
+ALL_SUB_TYPE_CHOICES = _flatten_choices(SUB_TYPE_MAP)
+ALL_SUB_SUB_TYPE_CHOICES = _flatten_choices(SUB_SUB_TYPE_MAP)
 
 class OfficerForm(forms.ModelForm):
 
@@ -170,9 +201,15 @@ class OfficerForm(forms.ModelForm):
     widget=forms.TextInput(attrs={
         'class': 'form-control',
         'list': 'designation-list',
-        'placeholder': 'Search or enter designation'
-    })
-)
+        'placeholder': 'Search or enter designation'})
+        )
+    
+    category = forms.CharField(
+    widget=forms.TextInput(attrs={
+        'class': 'form-control',
+        'list': 'category-list',
+        'placeholder': 'Search or enter caregory'})
+        )
 
     state = forms.CharField(
         widget=forms.TextInput(attrs={
@@ -209,24 +246,38 @@ class OfficerForm(forms.ModelForm):
         widget=forms.Select(attrs={'class': 'form-control'})
     )
 
+    main_type = forms.ChoiceField(
+        choices=[("", "Select Main Type")] + MAIN_TYPE_CHOICES,
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control', 'id': 'id_main_type'})
+    )
+    sub_type = forms.ChoiceField(
+        choices=[("", "Select Sub Type")] + ALL_SUB_TYPE_CHOICES,
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control', 'id': 'id_sub_type'})
+    )
+    sub_sub_type = forms.ChoiceField(
+        choices=[("", "Select Sub-Sub Type")] + ALL_SUB_SUB_TYPE_CHOICES,
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control', 'id': 'id_sub_sub_type'})
+    )
+
     class Meta:
         model = Officer
-        fields = ['name', 'mobile_number', 'designation', 'state', 'city', 'address', 'work', 'division', 'government_level']
-
+        fields = ['name', 'mobile_number', 'contact_2', 'department', 'designation', 'category', 'sub_category',
+                   'state', 'city', 'address', 'work', 'division', 'government_level',
+                   'email', 'office_phone', 'pbx_extension', 'photo','main_type', 'sub_type', 'sub_sub_type']
+        
         widgets = {
-            'name': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'पूरा नाम दर्ज करें'
-            }),
-
-            'mobile_number': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': '10 अंकों का मोबाइल नंबर'
-            }),
-
-            'address': forms.Textarea(attrs={
-                'class': 'form-control',
-                'rows': 3,
-                'placeholder': 'पूरा पता'
-            }),
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'पूरा नाम दर्ज करें'}),
+            'mobile_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '10 अंकों का मोबाइल नंबर'}),
+            'address': forms.Textarea(attrs={'class': 'form-control','rows': 3, 'placeholder': 'पूरा पता'}),
+            'department': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'विभाग'}),
+            'category': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Category'}),
+            'sub_category': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Sub-Category'}),
+            'contact_2': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'दूसरा नंबर'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'email@example.com'}),
+            'office_phone': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Office Phone'}),
+            'pbx_extension': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'PBX Extension'}),
+            'photo': forms.ClearableFileInput(attrs={'class': 'form-control'}),
         }

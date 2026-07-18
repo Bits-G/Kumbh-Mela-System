@@ -11,10 +11,11 @@
 </style>
 </head>
 <body>
-    <h2>🕉️ Kumbh Mela Officer Details</h2>
+    <h2>Kumbh Mela Officer Details</h2>
     <table>
         <tr><td class="label">Name (नाम)</td><td>{{ officer.name }}</td></tr>
         <tr><td class="label">Mobile Number (नंबर)</td><td>{{ officer.mobile_number }}</td></tr>
+        <tr><td class="label">Department ()</td><td>{{ officer.departmrnt|default:"Not Selected }}</td></tr>
         <tr><td class="label">Designation (अधिकारी पद)</td><td>{{ officer.designation|default:"Not Selected" }}</td></tr>
         <tr><td class="label">State (राज्य)</td><td>{{ officer.state|default:"Not Selected" }}</td></tr>
         <tr><td class="label">City (शहर)</td><td>{{ officer.city|default:"Not Selected" }}</td></tr>
