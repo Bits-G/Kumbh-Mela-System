@@ -40,4 +40,7 @@ urlpatterns = [
     path('search/pdf/', views.search_results_pdf, name='search_results_pdf'),
     path('search/qr/', views.search_results_qr, name='search_results_qr'),
     path("delete-selected/", views.delete_selected_officers,name="delete_selected_officers"),
+    path('search/selected-pdf/', views.selected_officers_pdf, name='selected_officers_pdf'),
+    path('search/export-selected-csv/', views.export_selected_csv, name='export_selected_csv'),
+    path('search/export-selected-excel/', views.export_selected_excel, name='export_selected_excel'),
 ]

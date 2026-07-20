@@ -1,18 +1,34 @@
-
 {% extends 'officers/base.html' %}
 {% block title %}Search{% endblock %}
 {% block content %}
+<style>
+    
+    /* =========================== Table Header =========================== */
+    .table thead th {
+        background: linear-gradient(135deg, #0d6efd, #6610f2);
+        color: white;
+        border: none;
+        text-align: center;
+        vertical-align: middle;
+        font-size: 15px;
+        letter-spacing: .4px;
+    }
+</style>
 <div class="card p-4 mb-4">
     <h4 class="mb-3">🔍 खोजें (Search)</h4>
     <form method="get" class="row g-2">
         <div class="col-md-4">
             <select name="search_by" class="form-select">
-                <option value="name" {% if search_by == 'name' %}selected{% endif %}>Search by Name</option>
-                <option value="mobile" {% if search_by == 'mobile' %}selected{% endif %}>Search by Mobile No.</option>
-                <option value="address" {% if search_by == 'address' %}selected{% endif %}>Search by Address</option>
-                <option value="designation" {% if search_by == 'designation' %}selected{% endif %}>Search by अधिकारी पद</option>
-                <option value="state" {% if search_by == 'state' %}selected{% endif %}>Search by State</option>
-                <option value="city" {% if search_by == 'city' %}selected{% endif %}>Search by City</option>
+                <option value="name" {% if search_by == 'name' %}selected{% endif %}>Sr.No. | Name</option>
+                <option value="department" {% if search_by == 'department' %}selected{% endif %}>Dept.</option>
+                <option value="designation" {% if search_by == 'designation' %}selected{% endif %}>Designation</option>
+                <option value="category" {% if search_by == 'category' %}selected{% endif %}>Category</option>
+                <option value="sub_category" {% if search_by == 'sub_category' %}selected{% endif %}>Sub-Category</option>
+                <option value="mobile" {% if search_by == 'mobile' %}selected{% endif %}>Contact 1</option>
+                <option value="contact_2" {% if search_by == 'contact_2' %}selected{% endif %}>Contact 2</option>
+                <option value="email" {% if search_by == 'email' %}selected{% endif %}>Email</option>
+                <option value="office_phone" {% if search_by == 'office_phone' %}selected{% endif %}>Office Ph.</option>
+                <option value="address" {% if search_by == 'address' %}selected{% endif %}>Address</option>
             </select>
         </div>
         <div class="col-md-6">
@@ -28,37 +44,181 @@
 <h5 class="mb-3">परिणाम ({{ results|length }})</h5>
 
 {% if results %}
-<div class="d-flex gap-3 align-items-center mb-3 flex-wrap">
-    <a href="{{ pdf_full_url }}" target="_blank" class="btn btn-outline-primary">📄 Sabhi Results ka PDF dekho</a>
-    <a href="https://wa.me/?text={{ pdf_full_url|urlencode }}" target="_blank" class="btn btn-success">
-        💬 WhatsApp pe Link Bhejo
-    </a>
-    <div class="text-center">
-    <img id="qrImage" src="{% url 'search_results_qr' %}?q={{ query|urlencode }}&search_by={{ search_by }}" width="90" height="90" alt="QR">
-    <div><small class="text-muted">PDF access QR</small></div>
-    <button type="button" class="btn btn-sm btn-outline-success mt-1" onclick="shareQRImage()">
-        📤 QR Photo Share Karo
-    </button>
+<div class="card p-3 mb-3">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <a href="{{ pdf_full_url }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                📄 Sabhi Results ka PDF
+            </a>
+            <a href="https://wa.me/?text={{ pdf_full_url|urlencode }}" target="_blank" class="btn btn-success btn-sm">
+                💬 WhatsApp pe Link
+            </a>
+        </div>
+
+        <div class="text-center">
+            <img id="qrImage" src="{% url 'search_results_qr' %}?q={{ query|urlencode }}&search_by={{ search_by }}" width="70" height="70" alt="QR">
+            <div><small class="text-muted d-block">PDF access QR</small>
+            <button type="button" class="btn btn-sm btn-outline-success mt-1" onclick="shareQRImage()">
+                📤 QR Share
+            </button></div>
+        </div>
+    </div>
+
+    <hr class="my-3">
+
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+        <span class="text-muted small">Selected Entries:</span>
+        <button type="button" class="btn btn-primary btn-sm" onclick="viewSelectedPDF()">
+            📄 PDF Dekho
+        </button>
+        <div class="dropdown">
+            <button class="btn btn-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                📤 Share Karo
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="#" onclick="shareSelected('whatsapp'); return false;"><i class="bi bi-whatsapp text-success"></i> WhatsApp</a></li>
+                <li><a class="dropdown-item" href="#" onclick="shareSelected('sms'); return false;"><i class="bi bi-chat-dots text-primary"></i> SMS</a></li>
+                <li><a class="dropdown-item" href="#" onclick="shareSelected('pdf'); return false;"><i class="bi bi-file-earmark-pdf text-danger"></i> PDF</a></li>
+            </ul>
+        </div>
+        <span class="text-muted small" id="selectedCountLabel">(0 selected)</span>
+    </div>
 </div>
+{% endif %}
+
+<div class="table-responsive p-3" style="background: #ffffff; border-radius: 8px; width: 100%;">
+<table class="table table-bordered align-middle mb-0">
+    <thead>
+        <tr>
+            <th><input type="checkbox" id="selectAllCheckbox"></th>
+            <th>Sr.No.</th>
+            <th>Name</th>
+            <th>Dept.</th>
+            <th>Designation</th>
+            <th>Category</th>
+            <th>Sub-Category</th>
+            <th>Contact 1</th>
+            <th>Contact 2</th>
+            <th>Email</th>
+            <th>Office Ph.</th>
+            <th>PBX Ext.</th>
+            <th>Photo</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for officer in results %}
+        <tr>
+            <td><input type="checkbox" class="row-checkbox" value="{{ officer.pk }}"></td>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ officer.name }}</td>
+            <td>{{ officer.department|default:"-" }}</td>
+            <td>{{ officer.designation|default:"-" }}</td>
+            <td>{{ officer.category|default:"-" }}</td>
+            <td>{{ officer.sub_category|default:"-" }}</td>
+            <td>{{ officer.mobile_number }}</td>
+            <td>{{ officer.contact_2|default:"-" }}</td>
+            <td>{{ officer.email|default:"-" }}</td>
+            <td>{{ officer.office_phone|default:"-" }}</td>
+            <td>{{ officer.pbx_extension|default:"-" }}</td>
+            <td>
+                {% if officer.photo %}
+                    <img src="{{ officer.photo.url }}" width="40" height="40" style="object-fit: cover; border-radius: 4px;">
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+            <td>
+                <div class="d-flex align-items-center gap-1">
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-dark dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-share-fill"></i> Share
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a class="dropdown-item"
+                                   href="https://wa.me/?text={{ officer.name|urlencode }}%20-%20{{ officer.designation|urlencode }}%0APDF:%20{{ request.scheme }}://{{ request.get_host }}{% url 'generate_officer_pdf' officer.pk %}"
+                                   target="_blank">
+                                   <i class="bi bi-whatsapp text-success"></i> WhatsApp
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item"
+                                   href="sms:?body={{ officer.name|urlencode }}%20details:%20{{ request.scheme }}://{{ request.get_host }}{% url 'generate_officer_pdf' officer.pk %}">
+                                   <i class="bi bi-chat-dots text-primary"></i> SMS
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'generate_officer_pdf' officer.pk %}" target="_blank">
+                                   <i class="bi bi-file-earmark-pdf text-danger"></i> PDF
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <a href="{% url 'officer_edit' officer.pk %}" class="btn btn-sm btn-outline-primary edit-btn">Edit</a>
+                </div>
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="14" class="text-center text-muted">कोई परिणाम नहीं मिला</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
 </div>
+{% endif %}
+
 <script>
+function getSelectedIds() {
+    return Array.from(document.querySelectorAll('.row-checkbox:checked')).map(cb => cb.value);
+}
+
+function toggleEditButtons() {
+    const selectedCount = getSelectedIds().length;
+    document.querySelectorAll('.edit-btn').forEach(btn => {
+        btn.style.display = selectedCount > 1 ? 'none' : 'inline-block';
+    });
+    const label = document.getElementById('selectedCountLabel');
+    if (label) label.textContent = '(' + selectedCount + ' selected)';
+}
+
+document.getElementById('selectAllCheckbox')?.addEventListener('change', function() {
+    document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = this.checked);
+    toggleEditButtons();
+});
+
+document.querySelectorAll('.row-checkbox').forEach(cb => {
+    cb.addEventListener('change', toggleEditButtons);
+});
+
+function viewSelectedPDF() {
+    const ids = getSelectedIds();
+    if (ids.length === 0) { alert('Kam se kam 1 entry select karo'); return; }
+    window.open("{% url 'selected_officers_pdf' %}?ids=" + ids.join(','), '_blank');
+}
+
+function shareSelected(type) {
+    const ids = getSelectedIds();
+    if (ids.length === 0) { alert('Kam se kam 1 entry select karo'); return; }
+    const pdfUrl = window.location.origin + "{% url 'selected_officers_pdf' %}?ids=" + ids.join(',');
+    if (type === 'whatsapp') {
+        window.open('https://wa.me/?text=' + encodeURIComponent(pdfUrl), '_blank');
+    } else if (type === 'sms') {
+        window.location.href = 'sms:?body=' + encodeURIComponent(pdfUrl);
+    } else if (type === 'pdf') {
+        window.open(pdfUrl, '_blank');
+    }
+}
+
 async function shareQRImage() {
     const qrImg = document.getElementById('qrImage');
-    const shareMessage = "Kumbh Mela Officer Details — Search Results of {{ query|escapejs }}\nClick on PDF Link 👉: {{ pdf_full_url|escapejs }} or\nScan below QR Code to open PDF👇.";
-
+    const shareMessage = "Kumbh Mela Officer Details — Search Results of {{ query|escapejs }}";
     try {
         const response = await fetch(qrImg.src);
         const blob = await response.blob();
         const file = new File([blob], 'qr-code.png', { type: 'image/png' });
-
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            await navigator.share({
-                files: [file],
-                title: 'Kumbh Mela Search Results QR',
-                text: shareMessage,
-            });
+            await navigator.share({ files: [file], title: 'Kumbh Mela Search Results QR', text: shareMessage });
         } else {
-            // Fallback: download the image so user can manually share
             const link = document.createElement('a');
             link.href = qrImg.src;
             link.download = 'qr-code.png';
@@ -70,51 +230,4 @@ async function shareQRImage() {
     }
 }
 </script>
-{% endif %}
-
-<div class="row g-3">
-    {% for officer in results %}
-    <div class="col-md-6">
-        <div class="card p-3">
-            <h5>{{ officer.name }}</h5>
-            <p class="mb-1"><strong>नंबर:</strong> {{ officer.mobile_number }}</p>
-            <p class="mb-1"><strong>अधिकारी पद:</strong> {{ officer.designation }}</p>
-            <p class="mb-1"><strong>राज्य/शहर:</strong> {{ officer.state }}, {{ officer.city }}</p>
-            <p class="mb-1"><strong>पत्ता:</strong> {{ officer.address }}</p>
-            <p class="mb-2"><strong>काम:</strong> {{ officer.work }}</p>
-            
-            <img src="{% url 'officer_qr_code' officer.pk %}" width="60" height="60" class="mb-2" alt="QR">
-
-            <div class="dropdown">
-                <button class="btn btn-sm btn-outline-dark dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                    <i class="bi bi-share-fill"></i> Share
-                </button>
-                <ul class="dropdown-menu">
-                    <li>
-                        <a class="dropdown-item"
-                           href="https://wa.me/?text={{ officer.name|urlencode }}%20-%20{{ officer.designation|urlencode }}%0APDF:%20{{ request.scheme }}://{{ request.get_host }}{% url 'generate_officer_pdf' officer.pk %}"
-                           target="_blank">
-                           <i class="bi bi-whatsapp text-success"></i> WhatsApp
-                        </a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item"
-                           href="sms:?body={{ officer.name|urlencode }}%20details:%20{{ request.scheme }}://{{ request.get_host }}{% url 'generate_officer_pdf' officer.pk %}">
-                           <i class="bi bi-chat-dots text-primary"></i> SMS
-                        </a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item" href="{% url 'generate_officer_pdf' officer.pk %}" target="_blank">
-                           <i class="bi bi-file-earmark-pdf text-danger"></i> View / Download PDF
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </div>
-    {% empty %}
-    <p class="text-muted">कोई परिणाम नहीं मिला</p>
-    {% endfor %}
-</div>
-{% endif %}
 {% endblock %}

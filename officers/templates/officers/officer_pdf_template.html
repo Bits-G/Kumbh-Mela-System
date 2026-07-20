@@ -1,26 +1,99 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html>
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8">
+
 <style>
-    body { font-family: 'Noto Sans Devanagari', 'Arial', sans-serif; padding: 30px; }
-    h2 { color: #c0392b; border-bottom: 2px solid #c0392b; padding-bottom: 8px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    td { padding: 10px; border-bottom: 1px solid #ddd; }
-    td.label { font-weight: bold; width: 35%; color: #333; }
+    body{
+        font-family: Arial, sans-serif;
+        font-size:10px;
+        padding:20px;
+    }
+
+    h2{
+        text-align:center;
+        margin-bottom:5px;
+    }
+
+    table{
+        width:100%;
+        border-collapse:collapse;
+        margin-top:15px;
+    }
+
+    th,
+    td{
+        border:1px solid #999;
+        padding:4px;
+        text-align:left;
+        vertical-align:middle;
+    }
+
+    th{
+        background:#c0392b;
+        color:#fff;
+    }
+
+    img{
+        width:60px;
+        height:60px;
+        object-fit:cover;
+        border-radius:4px;
+    }
 </style>
+
 </head>
+
 <body>
-    <h2>Kumbh Mela Officer Details</h2>
-    <table>
-        <tr><td class="label">Name (नाम)</td><td>{{ officer.name }}</td></tr>
-        <tr><td class="label">Mobile Number (नंबर)</td><td>{{ officer.mobile_number }}</td></tr>
-        <tr><td class="label">Department ()</td><td>{{ officer.departmrnt|default:"Not Selected }}</td></tr>
-        <tr><td class="label">Designation (अधिकारी पद)</td><td>{{ officer.designation|default:"Not Selected" }}</td></tr>
-        <tr><td class="label">State (राज्य)</td><td>{{ officer.state|default:"Not Selected" }}</td></tr>
-        <tr><td class="label">City (शहर)</td><td>{{ officer.city|default:"Not Selected" }}</td></tr>
-        <tr><td class="label">Address (पत्ता)</td><td>{{ officer.address }}</td></tr>
-        <tr><td class="label">Work (काम)</td><td>{{ officer.work|default:"Not Selected" }}</td></tr>
-    </table>
+
+<h2>Officer Details</h2>
+
+<table>
+
+    <thead>
+        <tr>
+            <th>Sr.No.</th>
+            <th>Name</th>
+            <th>Dept.</th>
+            <th>Designation</th>
+            <th>Category</th>
+            <th>Sub-Category</th>
+            <th>Contact 1</th>
+            <th>Contact 2</th>
+            <th>Email</th>
+            <th>Office Ph.</th>
+            <th>PBX Ext.</th>
+            <th>Photo</th>
+        </tr>
+    </thead>
+
+    <tbody>
+
+        <tr>
+            <td>1</td>
+            <td>{{ officer.name }}</td>
+            <td>{{ officer.department|default:"-" }}</td>
+            <td>{{ officer.designation|default:"-" }}</td>
+            <td>{{ officer.category|default:"-" }}</td>
+            <td>{{ officer.sub_category|default:"-" }}</td>
+            <td>{{ officer.mobile_number }}</td>
+            <td>{{ officer.contact_2|default:"-" }}</td>
+            <td>{{ officer.email|default:"-" }}</td>
+            <td>{{ officer.office_phone|default:"-" }}</td>
+            <td>{{ officer.pbx_extension|default:"-" }}</td>
+
+            <td>
+                {% if officer.photo %}
+                    <img src="{{ officer.photo.url }}">
+                {% else %}
+                    No Photo
+                {% endif %}
+            </td>
+        </tr>
+
+    </tbody>
+
+</table>
+
 </body>
 </html>

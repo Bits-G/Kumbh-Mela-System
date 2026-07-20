@@ -14,31 +14,9 @@
         </p>
 
         <div class="d-flex gap-2 flex-wrap">
-
-            <a href="{% url 'officer_export_csv' %}"
-               class="btn btn-success">
-
-                <i class="bi bi-filetype-csv"></i>
-                Export CSV
-
-            </a>
-
-            <a href="{% url 'officer_export_excel' %}"
-               class="btn btn-primary">
-
-                <i class="bi bi-file-earmark-excel"></i>
-                Export Excel
-
-            </a>
-
-            <a href="{% url 'officer_list' %}"
-               class="btn btn-secondary">
-
-                <i class="bi bi-arrow-left"></i>
-                Sabhi Entries Dekho
-
-            </a>
-
+            <a href="{% url 'officer_export_csv' %}"class="btn btn-success"><i class="bi bi-filetype-csv"></i>Export CSV</a>
+            <a href="{% url 'officer_export_excel' %}"class="btn btn-primary"><i class="bi bi-file-earmark-excel"></i>Export Excel</a>
+            <a href="{% url 'officer_list' %}"class="btn btn-dark"><i class="bi bi-arrow-left"></i>Sabhi Entries Dekho</a>
         </div>
 
     </div>

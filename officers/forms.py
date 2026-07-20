@@ -211,28 +211,28 @@ class OfficerForm(forms.ModelForm):
         'placeholder': 'Search or enter caregory'})
         )
 
-    state = forms.CharField(
-        widget=forms.TextInput(attrs={
-            'class': 'form-control',
-            'list': 'state-list',
-            'placeholder': 'Search or Enter state'})
-    )
+    # state = forms.CharField(
+    #     widget=forms.TextInput(attrs={
+    #         'class': 'form-control',
+    #         'list': 'state-list',
+    #         'placeholder': 'Search or Enter state'})
+    # )
     
-    city = forms.CharField(
-        widget=forms.TextInput(attrs={
-            'class': 'form-control',
-            'list': 'city-list',
-            'placeholder': 'Search or Enter city'})
-    )
+    # city = forms.CharField(
+    #     widget=forms.TextInput(attrs={
+    #         'class': 'form-control',
+    #         'list': 'city-list',
+    #         'placeholder': 'Search or Enter city'})
+    # )
 
-    work = forms.CharField(
-        # choices=WORK_CHOICES,
-        widget=forms.TextInput(attrs={
-            'class': 'form-control',
-            'list': 'work-list',
-            'placeholder': 'Search or Enter work'
-        })
-    )
+    # work = forms.CharField(
+    #     # choices=WORK_CHOICES,
+    #     widget=forms.TextInput(attrs={
+    #         'class': 'form-control',
+    #         'list': 'work-list',
+    #         'placeholder': 'Search or Enter work'
+    #     })
+    # )
 
     division = forms.ChoiceField(
         choices=[("", "Select Division")] + DIVISION_CHOICES,
@@ -264,9 +264,9 @@ class OfficerForm(forms.ModelForm):
 
     class Meta:
         model = Officer
-        fields = ['name', 'mobile_number', 'contact_2', 'department', 'designation', 'category', 'sub_category',
-                   'state', 'city', 'address', 'work', 'division', 'government_level',
-                   'email', 'office_phone', 'pbx_extension', 'photo','main_type', 'sub_type', 'sub_sub_type']
+        fields = ['name', 'mobile_number', 'contact_2', 'department', 'designation', 'category', 'sub_category', 
+                   'address', 'division', 'government_level', 'email', 'office_phone', 
+                   'pbx_extension', 'photo','main_type', 'sub_type', 'sub_sub_type']
         
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'पूरा नाम दर्ज करें'}),

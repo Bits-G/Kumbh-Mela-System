@@ -250,7 +250,10 @@
             <h3>{{ page_obj.paginator.count }}</h3>
 
             <small>Total Officers</small>
-
+            <div class="mt-2">
+                <button type="button" class="btn btn-light btn-sm" onclick="clearSelection()">❌ Clear Selection</button>
+            </div>
+            <span class="text large align-self-center" id="selectedCountLabel">(0 selected)</span>
         </div>
 
     </div>
@@ -262,50 +265,52 @@
         <input type="text"
                id="tableSearch"
                class="form-control form-control-lg shadow-sm"
-               placeholder="🔍 Search by Name, Mobile, Designation, State, City...">
-
+               placeholder="🔍 Search by Name, Mobile, Designation, Category, Email...">
     </div>
-
 </div>
 
 <div class="d-flex gap-2 mb-3">
-    <a href="{% url 'officer_add' %}" class="btn btn-primary">
-        ➕ Add Entry
-    </a>
-
-    <a href="{% url 'officer_import' %}" class="btn btn-success">
-        📥 Import Entries
-    </a>
-
-    <a href="{% url 'officer_export' %}" class="btn btn-success">
-        📤 Share All Entries
-    </a>
+    <a href="{% url 'officer_add' %}" class="btn btn-primary">➕ Add Entry</a>
     
+    <a href="{% url 'officer_import' %}" class="btn btn-success">📥 Import Entries</a>
+
+    <a href="{% url 'officer_export' %}" class="btn btn-info">📊 Export All Entries</a>
+
+    <div class="card p-1">  
+        <div>Export Selected entries as :
+            <button type="button" class="btn btn-dark btn-sm" onclick="exportSelected('csv')">📊 CSV</button>
+            <button type="button" class="btn btn-dark btn-sm" onclick="exportSelected('excel')">📊 Excel</button>
+        </div>
+    </div>
+    
+    <div class="mt-2">
+        <button type="button" onclick="shareSelected('pdf'); return false;"><i class="bi bi-file-earmark-pdf text-danger"></i> PDF Dekho</onclick=></button>
+    </div>
+
 </div>
 <form method="POST" action="{% url 'delete_selected_officers' %}">
     {% csrf_token %}
 <div class="table-responsive">
     <table class="table table-hover table-bordered align-middle">
     <thead class="table-dark">
-        <tr>
-            <th>Sr.No.</th>
-            <th>Name</th>
-            <th>Dept.</th>
-            <th>Designation</th>
-            <th>Category</th>
-            <th>Sub-Category</th>
-            <th>Contact 1</th>
-            <th>Contact 2</th>
-            <th>Email</th>
-            <th>Office Ph.</th>
-            <th>PBX Ext.</th>
-            <th>Photo</th>
-            <th>Actions</th>
-            <th width="120" style="text-align: center;">Select All
-                <input type="checkbox" id="select-all">
-            </th>
-        </tr>
-    </thead>
+    <tr>
+        
+        <th>Sr.No.</th>
+        <th>Name</th>
+        <th>Dept.</th>
+        <th>Designation</th>
+        <th>Category</th>
+        <th>Sub-Category</th>
+        <th>Contact 1</th>
+        <th>Contact 2</th>
+        <th>Email</th>
+        <th>Office Ph.</th>
+        <th>PBX Ext.</th>
+        <th>Photo</th>
+        <th>Actions</th>
+        <th>Select<br> All <input type="checkbox" id="select-all"></th>
+    </tr>
+</thead>
 <style>
     body {
 
@@ -416,9 +421,7 @@
             <a href="{% url 'officer_delete' officer.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
             <a href="{% url 'generate_officer_pdf' officer.pk %}" target="_blank" class="btn btn-sm btn-outline-dark">PDF</a>
         </td>
-        <td>
-            <input type="checkbox" class="row-checkbox" name="selected_ids" value="{{ officer.id }}">
-        </td>
+        <td><input type="checkbox" class="row-checkbox" name="selected_ids" value="{{ officer.pk }}"></td>
     </tr>
     {% empty %}
     <tr><td colspan="13" class="text-center text-muted">कोई एंट्री नहीं मिली</td></tr>
@@ -436,8 +439,8 @@
 
     </table>
     <button class="btn btn-danger mt-3" style="position: fixed; bottom: 20px; right: 20px;" type="submit"
-            onclick="return confirm('Selected entries delete karna chahte hain?')">🗑 Delete Selected
-    </button>
+        onclick="return confirm('Selected entries delete karna chahte hain?') && (clearStorageOnly(), true)">🗑 Delete Selected
+</button>
     </form>
 </div>
 
@@ -484,7 +487,109 @@
     </ul>
 </nav>
 
-<!-- Select All Script --> 
+<script>
+    const STORAGE_KEY = 'kumbh_mela_selected_officers';
+
+    function getStoredIds() {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    }
+
+    function setStoredIds(ids) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(ids));
+        updateSelectedCount();
+    }
+
+    function updateSelectedCount() {
+        const count = getStoredIds().length;
+        const label = document.getElementById('selectedCountLabel');
+        if (label) label.textContent = '(' + count + ' selected)';
+    }
+
+    function clearStorageOnly() {
+        localStorage.removeItem(STORAGE_KEY);
+    }
+
+    function getSelectedIds() {
+        return getStoredIds();
+    }
+
+    function clearSelection() {
+        localStorage.removeItem(STORAGE_KEY);
+        document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = false);
+        updateSelectedCount();
+    }
+
+    function viewSelectedPDF() {
+        const ids = getSelectedIds();
+        if (ids.length === 0) { alert('Kam se kam 1 entry select karo'); return; }
+        window.open("{% url 'selected_officers_pdf' %}?ids=" + ids.join(','), '_blank');
+    }
+
+    function shareSelected(type) {
+        const ids = getSelectedIds();
+        if (ids.length === 0) { alert('Kam se kam 1 entry select karo'); return; }
+        const pdfUrl = window.location.origin + "{% url 'selected_officers_pdf' %}?ids=" + ids.join(',');
+        if (type === 'whatsapp') {
+            window.open('https://wa.me/?text=' + encodeURIComponent(pdfUrl), '_blank');
+        } else if (type === 'sms') {
+            window.location.href = 'sms:?body=' + encodeURIComponent(pdfUrl);
+        } else if (type === 'pdf') {
+            window.open(pdfUrl, '_blank');
+        }
+    }
+    
+    function exportSelected(type) {
+        const ids = getSelectedIds();
+        if (ids.length === 0) { alert('Kam se kam 1 entry select karo'); return; }
+        const urlName = type === 'csv' ? "{% url 'export_selected_csv' %}" : "{% url 'export_selected_excel' %}";
+        window.open(urlName + "?ids=" + ids.join(','), '_blank');
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const stored = getStoredIds();
+        const checkboxes = document.querySelectorAll('.row-checkbox');
+        const selectAll = document.getElementById('select-all');
+
+        function syncSelectAllState() {
+            if (!selectAll) return;
+            const total = checkboxes.length;
+            const checked = document.querySelectorAll('.row-checkbox:checked').length;
+            selectAll.checked = total > 0 && total === checked;
+        }
+
+        checkboxes.forEach(cb => {
+            if (stored.includes(cb.value)) cb.checked = true;
+            cb.addEventListener('change', function () {
+                let ids = getStoredIds();
+                if (this.checked) {
+                    if (!ids.includes(this.value)) ids.push(this.value);
+                } else {
+                    ids = ids.filter(id => id !== this.value);
+                }
+                setStoredIds(ids);
+                syncSelectAllState();
+            });
+        });
+
+        if (selectAll) {
+            selectAll.addEventListener('change', function () {
+                let ids = getStoredIds();
+                checkboxes.forEach(cb => {
+                    cb.checked = this.checked;
+                    if (this.checked) {
+                        if (!ids.includes(cb.value)) ids.push(cb.value);
+                    } else {
+                        ids = ids.filter(id => id !== cb.value);
+                    }
+                });
+                setStoredIds(ids);
+            });
+        }
+
+        syncSelectAllState();
+        updateSelectedCount();
+    });
+</script>
 <script> 
  const selectAll=document.getElementById("select-all"); 
  const checkboxes=document.querySelectorAll(".row-checkbox"); 

@@ -3,32 +3,119 @@
 <head>
 <meta charset="utf-8">
 <style>
-    body { font-family: sans-serif; font-size: 13px; }
-    h2 { text-align: center; }
-    .entry {
-        margin-bottom: 14px;
-        padding-bottom: 10px;
-        border-bottom: 1px solid #070707;
-    }
-    .entry p { margin: 5px 20px; }
-    .label { font-weight: bold; }
+    @page{
+    margin:10mm;
+}
+
+body{
+    font-family:Arial,sans-serif;
+    font-size:9px;
+    margin:0;
+    padding:0;
+}
+
+h2{
+    text-align:center;
+    margin-bottom:5px;
+}
+
+p.meta{
+    text-align:center;
+    margin-bottom:10px;
+    color:#555;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    table-layout:auto;      /* Important */
+}
+
+th,td{
+    border:1px solid #999;
+    padding:4px;
+    vertical-align:middle;
+    text-align:center;
+    white-space:normal;
+    word-break:break-word;
+}
+
+th{
+    background:#c0392b;
+    color:#fff;
+    font-size:9px;
+}
+
+td{
+    font-size:8px;
+}
+
+img.officer-photo{
+    width:30px;
+    height:30px;
+    object-fit:cover;
+}
 </style>
 </head>
 <body>
-    <h2>Kumbh Mela Officer Details — Search Results of ({{ query }})</h2>
-    <p>Total entries: {{ results|length }}</p>
-    <hr>
-    {% for officer in results %}
-    <div class="entry">
-        <p><span class="label">Name (नाम):</span> {{ officer.name }}</p>
-        <p><span class="label">Mobile No. (नंबर):</span> {{ officer.mobile_number }}</p>
-        <p><span class="label">Designation (अधिकारी पद):</span> {{ officer.designation }}</p>
-        <p><span class="label">State (राज्य):</span> {{ officer.state }}</p>
-        <p><span class="label">City (शहर):</span> {{ officer.city }}</p>
-        <p><span class="label">Address (पत्ता):</span> {{ officer.address }}</p>
-        <p><span class="label">Work (काम):</span> {{ officer.work }}</p>
-    </div>
-    
-    {% endfor %}
+    <h2>Search Results</h2>
+    <p class="meta">Search Results of : "{{ query }}" &nbsp; | &nbsp; Total entries: {{ results|length }}</p>
+
+    <table>
+        <colgroup>
+            <col style="width:4%">
+            <col style="width:10%">
+            <col style="width:11%">
+            <col style="width:12%">
+            <col style="width:4%">
+            <col style="width:8%">
+            <col style="width:9%">
+            <col style="width:9%">
+            <col style="width:8%">
+            <col style="width:7%">
+            <col style="width:4%">
+            <col style="width:4%">
+        </colgroup>
+        <thead>
+            <tr>
+                <th>Sr.No.</th>
+                <th>Name</th>
+                <th>Dept.</th>
+                <th>Designation</th>
+                <th>Category</th>
+                <th>Sub-Category</th>
+                <th>Contact 1</th>
+                <th>Contact 2</th>
+                <th>Email</th>
+                <th>Office Ph.</th>
+                <th>PBX Ext.</th>
+                <th>Photo</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for officer in results %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ officer.name }}</td>
+                <td>{{ officer.department|default:"-" }}</td>
+                <td>{{ officer.designation|default:"-" }}</td>
+                <td>{{ officer.category|default:"-" }}</td>
+                <td>{{ officer.sub_category|default:"-" }}</td>
+                <td>{{ officer.mobile_number }}</td>
+                <td>{{ officer.contact_2|default:"-" }}</td>
+                <td>{{ officer.email|default:"-" }}</td>
+                <td>{{ officer.office_phone|default:"-" }}</td>
+                <td>{{ officer.pbx_extension|default:"-" }}</td>
+                <td>
+                    {% if officer.photo %}
+                        <img class="officer-photo" src="{{ officer.photo.url }}">
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </body>
 </html>

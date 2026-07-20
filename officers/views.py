@@ -153,6 +153,7 @@ from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Q
 from django.http import HttpResponse
+from django.http import JsonResponse
 from django.core.paginator import Paginator
 from django.template.loader import render_to_string
 from django.urls import reverse
@@ -452,9 +453,14 @@ def search_officers(request):
         'mobile': 'mobile_number__icontains',
         'address': 'address__icontains',
         'designation': 'designation__icontains',
-        'state': 'state__icontains',
-        'city': 'city__icontains',   
+        'department': 'department__icontains',
+        'category': 'category__icontains',
+        'sub_category': 'sub_category__icontains',
+        'contact_2': 'contact_2__icontains',
+        'email': 'email__icontains',
+        'office_phone': 'office_phone__icontains',
     }
+
     results = []
     pdf_full_url = None
     if query and search_by in field_map:
@@ -482,9 +488,14 @@ def search_results_pdf(request):
         'mobile': 'mobile_number__icontains',
         'address': 'address__icontains',
         'designation': 'designation__icontains',
-        'state': 'state__icontains', 
-        'city': 'city__icontains',
+        'department': 'department__icontains',
+        'category': 'category__icontains',
+        'sub_category': 'sub_category__icontains',
+        'contact_2': 'contact_2__icontains',
+        'email': 'email__icontains',
+        'office_phone': 'office_phone__icontains',
     }
+
     results = []
     if query and search_by in field_map:
         results = Officer.objects.filter(**{field_map[search_by]: query})
@@ -657,3 +668,75 @@ def delete_selected_officers(request):
                 "Please select at least one entry."
             )
     return redirect("officer_list")
+
+@login_required
+def selected_officers_pdf(request):
+    ids_param = request.GET.get('ids', '')
+    ids = [i for i in ids_param.split(',') if i.isdigit()]
+    results = Officer.objects.filter(pk__in=ids)
+
+    html_string = render_to_string('officers/officer_search_pdf_template.html', {
+        'results': results,
+        'query': 'Selected Entries',
+    })
+
+    try:
+        from weasyprint import HTML
+        pdf_file = HTML(string=html_string, base_url=request.build_absolute_uri('/')).write_pdf()
+        response = HttpResponse(pdf_file, content_type='application/pdf')
+        response['Content-Disposition'] = 'inline; filename="selected_entries.pdf"'
+        return response
+    except Exception as e:
+        return HttpResponse(f"PDF generation error: {e}", status=500)
+    
+
+@login_required
+def export_selected_csv(request):
+    ids_param = request.GET.get('ids', '')
+    ids = [i for i in ids_param.split(',') if i.isdigit()]
+    officers = Officer.objects.filter(pk__in=ids)
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="selected_entries.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(['Sr.No.', 'Name', 'Dept.', 'Designation', 'Category', 'Sub-Category',
+                      'Contact 1', 'Contact 2', 'Email', 'Office Ph.', 'PBX Ext.'])
+
+    for idx, officer in enumerate(officers, start=1):
+        writer.writerow([
+            idx, officer.name, officer.department or '', officer.designation or '',
+            officer.category or '', officer.sub_category or '', officer.mobile_number,
+            officer.contact_2 or '', officer.email or '', officer.office_phone or '',
+            officer.pbx_extension or '',
+        ])
+
+    return response
+
+
+@login_required
+def export_selected_excel(request):
+    from openpyxl import Workbook
+
+    ids_param = request.GET.get('ids', '')
+    ids = [i for i in ids_param.split(',') if i.isdigit()]
+    officers = Officer.objects.filter(pk__in=ids)
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = 'Selected Entries'
+    ws.append(['Sr.No.', 'Name', 'Dept.', 'Designation', 'Category', 'Sub-Category',
+               'Contact 1', 'Contact 2', 'Email', 'Office Ph.', 'PBX Ext.'])
+
+    for idx, officer in enumerate(officers, start=1):
+        ws.append([
+            idx, officer.name, officer.department or '', officer.designation or '',
+            officer.category or '', officer.sub_category or '', officer.mobile_number,
+            officer.contact_2 or '', officer.email or '', officer.office_phone or '',
+            officer.pbx_extension or '',
+        ])
+
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename="selected_entries.xlsx"'
+    wb.save(response)
+    return response
