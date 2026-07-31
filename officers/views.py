@@ -162,8 +162,16 @@ from .models import SUB_TYPE_MAP, SUB_SUB_TYPE_MAP
 from .models import Officer
 from .forms import OfficerForm
 from django.shortcuts import redirect
+from .models import DIVISION_CHOICES, GOVT_LEVEL_CHOICES, GENDER_CHOICES, MAIN_TYPE_CHOICES, SUB_TYPE_MAP, SUB_SUB_TYPE_MAP
 
 
+
+
+def set_language(request, lang_code):
+    if lang_code in ['en', 'mr']:
+        request.session['language'] = lang_code
+    next_url = request.META.get('HTTP_REFERER', '/dashboard/')
+    return redirect(next_url)
 
 def admin_login(request):
     if request.user.is_authenticated:
@@ -227,14 +235,17 @@ def admin_logout(request):
 #     })
 @login_required
 def kumbh_mela_dashboard(request):
-    from .models import DIVISION_CHOICES, GOVT_LEVEL_CHOICES, MAIN_TYPE_CHOICES, SUB_TYPE_MAP, SUB_SUB_TYPE_MAP
-
     total_officers = Officer.objects.count()
 
     govt_level_counts = []
     for value, label in GOVT_LEVEL_CHOICES:
         count = Officer.objects.filter(government_level=value).count()
         govt_level_counts.append({'value': value, 'label': label, 'count': count})
+
+    gender_counts = []
+    for value, label in GENDER_CHOICES:
+        count = Officer.objects.filter(gender=value).count()
+        gender_counts.append({'value': value, 'label': label, 'count': count})
 
     division_counts = []
     for value, label in DIVISION_CHOICES:
@@ -274,6 +285,7 @@ def kumbh_mela_dashboard(request):
     return render(request, 'officers/kumbh_mela.html', {
         'total_officers': total_officers,
         'govt_level_counts': govt_level_counts,
+        'gender_counts': gender_counts,
         'division_counts': division_counts,
         'main_type_counts': main_type_counts,
         'sub_type_counts': sub_type_counts,
@@ -299,21 +311,86 @@ def kumbh_mela_dashboard(request):
 
 #     return render(request, 'officers/officer_list.html', {'page_obj': page_obj})
 
+# @login_required
+# def officer_list(request):
+#     officers = Officer.objects.all()
+
+#     division_filter = request.GET.get('division')
+#     govt_level_filter = request.GET.get('govt_level')
+#     gender_filter = request.GET.get('gender')
+#     main_type_filter = request.GET.get('main_type')
+#     sub_type_filter = request.GET.get('sub_type')
+#     sub_sub_type_filter = request.GET.get('sub_sub_type')
+    
+
+#     if division_filter:
+#         officers = officers.filter(division=division_filter)
+#     if govt_level_filter:
+#         officers = officers.filter(government_level=govt_level_filter)
+#     if gender_filter:
+#         officers = officers.filter(gender=gender_filter)
+#     if main_type_filter:
+#         officers = officers.filter(main_type=main_type_filter)
+#     if sub_type_filter:
+#         officers = officers.filter(sub_type=sub_type_filter)
+#     if sub_sub_type_filter:
+#         officers = officers.filter(sub_sub_type=sub_sub_type_filter)
+
+#     paginator = Paginator(officers, 25)
+#     page_number = request.GET.get('page')
+#     page_obj = paginator.get_page(page_number)
+#     return render(request, 'officers/officer_list.html', {
+#         'page_obj': page_obj,
+#         'division_filter': division_filter,
+#         'govt_level_filter': govt_level_filter,
+#         'gender_filter': gender_filter,
+#     })
 @login_required
 def officer_list(request):
+    officers, page_title, filters = _get_filtered_officers_and_title(request)
+
+    paginator = Paginator(officers, 25)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    return render(request, 'officers/officer_list.html', {
+        'page_obj': page_obj,
+        'page_title': page_title,
+        **filters,
+    })
+@login_required
+def officer_list_pdf(request):
+    officers, page_title, filters = _get_filtered_officers_and_title(request)
+
+    html_string = render_to_string('officers/officer_search_pdf_template.html', {
+        'results': officers,
+        'page_title': page_title,
+    })
+
+    try:
+        from weasyprint import HTML
+        pdf_file = HTML(string=html_string, base_url=request.build_absolute_uri('/')).write_pdf()
+        response = HttpResponse(pdf_file, content_type='application/pdf')
+        response['Content-Disposition'] = 'inline; filename="directory_list.pdf"'
+        return response
+    except Exception as e:
+        return HttpResponse(f"PDF generation error: {e}", status=500)
+
+def _get_filtered_officers_and_title(request):
     officers = Officer.objects.all()
 
     division_filter = request.GET.get('division')
     govt_level_filter = request.GET.get('govt_level')
+    gender_filter = request.GET.get('gender')
     main_type_filter = request.GET.get('main_type')
     sub_type_filter = request.GET.get('sub_type')
     sub_sub_type_filter = request.GET.get('sub_sub_type')
-    
 
     if division_filter:
         officers = officers.filter(division=division_filter)
     if govt_level_filter:
         officers = officers.filter(government_level=govt_level_filter)
+    if gender_filter:
+        officers = officers.filter(gender=gender_filter)
     if main_type_filter:
         officers = officers.filter(main_type=main_type_filter)
     if sub_type_filter:
@@ -321,17 +398,33 @@ def officer_list(request):
     if sub_sub_type_filter:
         officers = officers.filter(sub_sub_type=sub_sub_type_filter)
 
-    paginator = Paginator(officers, 25)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-    return render(request, 'officers/officer_list.html', {
-        'page_obj': page_obj,
+    title_parts = []
+    if main_type_filter:
+        title_parts.append(dict(MAIN_TYPE_CHOICES).get(main_type_filter, main_type_filter))
+    if sub_type_filter and main_type_filter in SUB_TYPE_MAP:
+        title_parts.append(dict(SUB_TYPE_MAP[main_type_filter]).get(sub_type_filter, sub_type_filter))
+    if sub_sub_type_filter and sub_type_filter in SUB_SUB_TYPE_MAP:
+        title_parts.append(dict(SUB_SUB_TYPE_MAP[sub_type_filter]).get(sub_sub_type_filter, sub_sub_type_filter))
+    if division_filter:
+        title_parts.append(dict(DIVISION_CHOICES).get(division_filter, division_filter))
+    if govt_level_filter:
+        title_parts.append(dict(GOVT_LEVEL_CHOICES).get(govt_level_filter, govt_level_filter))
+    if gender_filter:
+        gender_label = dict(GENDER_CHOICES).get(gender_filter, gender_filter)
+        title_parts.append(f"{gender_label} Entries (Only)")
+
+    page_title = " — ".join(title_parts) if title_parts else "All Entries"
+
+    filters = {
         'division_filter': division_filter,
         'govt_level_filter': govt_level_filter,
-    })
+        'gender_filter': gender_filter,
+        'main_type_filter': main_type_filter,
+        'sub_type_filter': sub_type_filter,
+        'sub_sub_type_filter': sub_sub_type_filter,
+    }
 
-
-
+    return officers, page_title, filters
 
 @login_required
 def officer_add(request):

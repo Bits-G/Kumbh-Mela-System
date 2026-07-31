@@ -15,7 +15,7 @@
     }
 </style>
 <div class="card p-4 mb-4">
-    <h4 class="mb-3">🔍 खोजें (Search)</h4>
+    <h4 class="mb-3">🔍 Search here👇</h4>
     <form method="get" class="row g-2">
         <div class="col-md-4">
             <select name="search_by" class="form-select">
@@ -32,7 +32,7 @@
             </select>
         </div>
         <div class="col-md-6">
-            <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="यहां खोजें...">
+            <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="Search here...">
         </div>
         <div class="col-md-2">
             <button class="btn btn-success w-100" type="submit">Search</button>
@@ -41,17 +41,17 @@
 </div>
 
 {% if query %}
-<h5 class="mb-3">परिणाम ({{ results|length }})</h5>
+<h5 class="mb-3">Search Result ({{ results|length }})</h5>
 
 {% if results %}
 <div class="card p-3 mb-3">
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
         <div class="d-flex align-items-center gap-2 flex-wrap">
             <a href="{{ pdf_full_url }}" target="_blank" class="btn btn-outline-primary btn-sm">
-                📄 Sabhi Results ka PDF
+                📄 All Results PDF
             </a>
             <a href="https://wa.me/?text={{ pdf_full_url|urlencode }}" target="_blank" class="btn btn-success btn-sm">
-                💬 WhatsApp pe Link
+                💬 Share on WhatsApp
             </a>
         </div>
 
@@ -69,18 +69,19 @@
     <div class="d-flex align-items-center gap-2 flex-wrap">
         <span class="text-muted small">Selected Entries:</span>
         <button type="button" class="btn btn-primary btn-sm" onclick="viewSelectedPDF()">
-            📄 PDF Dekho
+            📄 View PDF
         </button>
         <div class="dropdown">
             <button class="btn btn-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                📤 Share Karo
+                📤 Share as
             </button>
             <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="#" onclick="shareSelected('whatsapp'); return false;"><i class="bi bi-whatsapp text-success"></i> WhatsApp</a></li>
+                <li><a class="dropdown-item" href="#" onclick="shareSelected('whatsapp'); return false;"><i class="bi bi-whatsapp text-success"></i> WhatsApp Link</a></li>
                 <li><a class="dropdown-item" href="#" onclick="shareSelected('sms'); return false;"><i class="bi bi-chat-dots text-primary"></i> SMS</a></li>
                 <li><a class="dropdown-item" href="#" onclick="shareSelected('pdf'); return false;"><i class="bi bi-file-earmark-pdf text-danger"></i> PDF</a></li>
             </ul>
         </div>
+            <button type="button" class="btn btn-dark btn-sm" onclick="clearSelection()">❌ Clear Selection</button>
         <span class="text-muted small" id="selectedCountLabel">(0 selected)</span>
     </div>
 </div>
@@ -160,7 +161,7 @@
             </td>
         </tr>
         {% empty %}
-        <tr><td colspan="14" class="text-center text-muted">कोई परिणाम नहीं मिला</td></tr>
+        <tr><td colspan="14" class="text-center text-muted">No results found</td></tr>
         {% endfor %}
     </tbody>
 </table>
@@ -209,24 +210,48 @@ function shareSelected(type) {
     }
 }
 
+// ===============================
+// CLEAR SELECTION
+// ===============================
+function clearSelection() {
+
+    // Uncheck every selected row
+    document.querySelectorAll('.row-checkbox').forEach(
+        function(cb) {
+            cb.checked = false;
+        }
+    );
+
+    // Uncheck Select All
+    const selectAll =
+        document.getElementById('selectAllCheckbox');
+
+    if (selectAll) {
+        selectAll.checked = false;
+    }
+
+    // Reset selected count
+    toggleEditButtons();
+}
+
 async function shareQRImage() {
     const qrImg = document.getElementById('qrImage');
-    const shareMessage = "Kumbh Mela Officer Details — Search Results of {{ query|escapejs }}";
+    const shareMessage = "Details of {{ query|escapejs }}";
     try {
         const response = await fetch(qrImg.src);
         const blob = await response.blob();
         const file = new File([blob], 'qr-code.png', { type: 'image/png' });
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            await navigator.share({ files: [file], title: 'Kumbh Mela Search Results QR', text: shareMessage });
+            await navigator.share({ files: [file], title: 'Search Results QR', text: shareMessage });
         } else {
             const link = document.createElement('a');
             link.href = qrImg.src;
             link.download = 'qr-code.png';
             link.click();
-            alert('Aapke browser mein direct share support nahi hai. QR image download ho gayi hai — usse WhatsApp mein manually attach karo, aur ye message likh do:\n\n' + shareMessage);
+            alert('Your browser does not support direct sharing. QR image downloaded — attach it to your whatsapp manually:\n\n' + shareMessage);
         }
     } catch (err) {
-        alert('QR share karte waqt error aaya: ' + err.message);
+        alert('Error occurred while generating QR : ' + err.message);
     }
 }
 </script>

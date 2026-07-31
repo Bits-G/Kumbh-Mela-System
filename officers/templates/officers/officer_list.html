@@ -238,20 +238,20 @@
         <div>
 
             <h2 class="page-title">
-                🕉️ Directory Management
+                {{ t.page_title }}
             </h2>
 
-            <p>Manage all registered officers efficiently.</p>
+            <p>{{ t.manage_officers_subtitle }}</p>
 
         </div>
-        <h4 class="mb-3">सभी एंट्री (All Entries)</h4>
+        <!-- <h4 class="mb-3">सभी एंट्री (All Entries)</h4> -->
         <div>
 
             <h3>{{ page_obj.paginator.count }}</h3>
 
-            <small>Total Officers</small>
+            <small>{{ t.total_officers }}</small>
             <div class="mt-2">
-                <button type="button" class="btn btn-light btn-sm" onclick="clearSelection()">❌ Clear Selection</button>
+                <button type="button" class="btn btn-light btn-sm" onclick="clearSelection()">❌ {{ t.clear_selection }}</button>
             </div>
             <span class="text large align-self-center" id="selectedCountLabel">(0 selected)</span>
         </div>
@@ -265,26 +265,28 @@
         <input type="text"
                id="tableSearch"
                class="form-control form-control-lg shadow-sm"
-               placeholder="🔍 Search by Name, Mobile, Designation, Category, Email...">
+               placeholder="🔍 {{ t.search_placeholder_full }}">
     </div>
 </div>
 
 <div class="d-flex gap-2 mb-3">
-    <a href="{% url 'officer_add' %}" class="btn btn-primary">➕ Add Entry</a>
+    <a href="{% url 'officer_add' %}" class="btn btn-primary">➕ {{ t.add_entry }}</a>
     
-    <a href="{% url 'officer_import' %}" class="btn btn-success">📥 Import Entries</a>
+    <a href="{% url 'officer_import' %}" class="btn btn-success">📥 {{ t.import_entries }}</a>
 
-    <a href="{% url 'officer_export' %}" class="btn btn-info">📊 Export All Entries</a>
+    <a href="{% url 'officer_export' %}" class="btn btn-info">📊 {{ t.export_all_entries }}</a>
 
-    <div class="card p-1">  
-        <div>Export Selected entries as :
+    <a href="{% url 'officer_list_pdf' %}?{{ request.GET.urlencode }}" target="_blank" class="btn btn-light">📄 {{ t.download_list_pdf }}</a>
+
+        <div class="card p-1">  
+            <div>{{ t.export_selected_as }} :
             <button type="button" class="btn btn-dark btn-sm" onclick="exportSelected('csv')">📊 CSV</button>
             <button type="button" class="btn btn-dark btn-sm" onclick="exportSelected('excel')">📊 Excel</button>
         </div>
     </div>
     
     <div class="mt-2">
-        <button type="button" onclick="shareSelected('pdf'); return false;"><i class="bi bi-file-earmark-pdf text-danger"></i> PDF Dekho</onclick=></button>
+        <button type="button" onclick="shareSelected('pdf'); return false;"><i class="bi bi-file-earmark-pdf text-danger"></i>{{ t.view_pdf_short }}</button>
     </div>
 
 </div>
@@ -295,20 +297,20 @@
     <thead class="table-dark">
     <tr>
         
-        <th>Sr.No.</th>
-        <th>Name</th>
-        <th>Dept.</th>
-        <th>Designation</th>
-        <th>Category</th>
-        <th>Sub-Category</th>
-        <th>Contact 1</th>
-        <th>Contact 2</th>
-        <th>Email</th>
-        <th>Office Ph.</th>
-        <th>PBX Ext.</th>
-        <th>Photo</th>
-        <th>Actions</th>
-        <th>Select<br> All <input type="checkbox" id="select-all"></th>
+        <th>{{ t.sr_no }}</th>
+        <th>{{ t.name }}</th>
+        <th>{{ t.dept }}</th>
+        <th>{{ t.designation }}</th>
+        <th>{{ t.category }}</th>
+        <th>{{ t.sub_category }}</th>
+        <th>{{ t.contact_1 }}</th>
+        <th>{{ t.contact_2 }}</th>
+        <th>{{ t.email }}</th>
+        <th>{{ t.office_ph }}</th>
+        <th>{{ t.pbx_ext }}</th>
+        <th>{{ t.photo }}</th>
+        <th>{{ t.actions }}</th>
+        <th>{{ t.select_all }}<br><input type="checkbox" id="select-all"></th>
     </tr>
 </thead>
 <style>
@@ -417,14 +419,14 @@
             {% endif %}
         </td>
         <td>
-            <a href="{% url 'officer_edit' officer.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
-            <a href="{% url 'officer_delete' officer.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
-            <a href="{% url 'generate_officer_pdf' officer.pk %}" target="_blank" class="btn btn-sm btn-outline-dark">PDF</a>
+            <a href="{% url 'officer_edit' officer.pk %}" class="btn btn-sm btn-outline-primary">{{ t.edit }}</a>
+            <a href="{% url 'officer_delete' officer.pk %}" class="btn btn-sm btn-outline-danger">{{ t.delete }}</a>
+            <a href="{% url 'generate_officer_pdf' officer.pk %}" target="_blank" class="btn btn-sm btn-outline-dark">{{ t.view_pdf }}</a>
         </td>
         <td><input type="checkbox" class="row-checkbox" name="selected_ids" value="{{ officer.pk }}"></td>
     </tr>
     {% empty %}
-    <tr><td colspan="13" class="text-center text-muted">कोई एंट्री नहीं मिली</td></tr>
+    <tr><td colspan="13" class="text-center text-muted">{{ t.no_entry_found }}</td></tr>
     {% endfor %}
     <script>
             document.getElementById("select-all").addEventListener("change", function () {
@@ -439,7 +441,7 @@
 
     </table>
     <button class="btn btn-danger mt-3" style="position: fixed; bottom: 20px; right: 20px;" type="submit"
-        onclick="return confirm('Selected entries delete karna chahte hain?') && (clearStorageOnly(), true)">🗑 Delete Selected
+        onclick="return confirm('Selected entries delete karna chahte hain?') && (clearStorageOnly(), true)">🗑 {{ t.delete_selected }}
 </button>
     </form>
 </div>
@@ -451,13 +453,13 @@
         {% if page_obj.has_previous %}
         <li class="page-item">
             <a class="page-link" href="?page=1">
-                ⏮ First
+                ⏮ {{ t.first }}
             </a>
         </li>
 
         <li class="page-item">
             <a class="page-link" href="?page={{ page_obj.previous_page_number }}">
-                ◀ Previous
+                ◀ {{ t.previous }}
             </a>
         </li>
         {% endif %}
@@ -465,7 +467,7 @@
         <!-- Page Number -->
         <li class="page-item disabled">
             <span class="page-link fw-bold">
-                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                {{ t.page_word }} {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
             </span>
         </li>
 
@@ -473,13 +475,13 @@
         {% if page_obj.has_next %}
         <li class="page-item">
             <a class="page-link" href="?page={{ page_obj.next_page_number }}">
-                Next ▶
+                {{ t.next }} ▶
             </a>
         </li>
 
         <li class="page-item">
             <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">
-                Last ⏭
+                {{ t.last }} ⏭
             </a>
         </li>
         {% endif %}

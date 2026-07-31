@@ -58,8 +58,8 @@ img.officer-photo{
 </style>
 </head>
 <body>
-    <h2>Search Results</h2>
-    <p class="meta">Search Results of : "{{ query }}" &nbsp; | &nbsp; Total entries: {{ results|length }}</p>
+    <h2>{% if page_title %}{{ page_title }}{% else %} Details of {{ query }} {% endif %}</h2>
+    <p class="meta">| &nbsp; Total entries: {{ results|length }} &nbsp; |</p>
 
     <table>
         <colgroup>

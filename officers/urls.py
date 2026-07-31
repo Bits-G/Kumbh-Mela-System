@@ -43,4 +43,6 @@ urlpatterns = [
     path('search/selected-pdf/', views.selected_officers_pdf, name='selected_officers_pdf'),
     path('search/export-selected-csv/', views.export_selected_csv, name='export_selected_csv'),
     path('search/export-selected-excel/', views.export_selected_excel, name='export_selected_excel'),
+    path('set-language/<str:lang_code>/', views.set_language, name='set_language'),
+    path('officers/list/pdf/', views.officer_list_pdf, name='officer_list_pdf'),
 ]

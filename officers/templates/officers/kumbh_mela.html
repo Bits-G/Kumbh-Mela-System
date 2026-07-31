@@ -1,5 +1,5 @@
 {% extends 'officers/base.html' %}
-{% block title %}Dashboard{% endblock %}
+{% block title %}{{ t.dashboard }}{% endblock %}
 {% block content %}
 
 <style>
@@ -33,22 +33,22 @@
     .entries-mini-table td, .entries-mini-table th { padding: 8px 10px; }
 </style>
 
-<h4 class="mb-1">Overview / एकूण माहिती</h4>
+<h4 class="mb-1">{{ t.dashboard }}</h4>
 <p class="text-muted mb-3">Click any card to view filtered member directory</p>
 
 <div class="row">
     <div class="col-md-4">
         <a href="{% url 'officer_list' %}" class="stat-card" style="background: linear-gradient(135deg, #f39c12, #e67e22);">
-            <div class="label">TOTAL MEMBERS / एकूण सदस्य</div>
+            <div class="label">{{ t.total_members }}</div>
             <div class="count">{{ total_officers }}</div>
             <div class="view-link">VIEW DIRECTORY →</div>
         </a>
     </div>
-    {% for item in govt_level_counts %}
+    {% for item in gender_counts %}
     <div class="col-md-4">
-        <a href="{% url 'officer_list' %}?govt_level={{ item.value }}" class="stat-card"
-           style="background: {% cycle '#2980b9' '#27ae60' %};">
-            <div class="label">{{ item.label|upper }}</div>
+        <a href="{% url 'officer_list' %}?gender={{ item.value }}" class="stat-card"
+           style="background: {% cycle '#3498db' '#e91e63' %};">
+            <div class="label">{{ item.label|upper }} ENTRIES (ONLY)</div>
             <div class="count">{{ item.count }}</div>
             <div class="view-link">VIEW DIRECTORY →</div>
         </a>
@@ -67,7 +67,7 @@
            style="background: {% cycle '#8e44ad' '#2c3e50' '#d35400' '#7f8c8d' as main_colors %};">
             <div class="label">{{ item.label|upper }}</div>
             <div class="count">{{ item.count }}</div>
-            <div class="view-link">DEKHO SUB-TYPES →</div>
+            <div class="view-link">View SUB-TYPES →</div>
         </a>
     </div>
     {% endfor %}
@@ -76,7 +76,7 @@
 {% if selected_main %}
 <div class="mb-3">
     <a href="{% url 'officer_list' %}?main_type={{ selected_main }}" class="btn btn-sm btn-outline-dark">
-        📋 {{ selected_main|upper }} ke sabhi entries dekho (poori list)
+        📋 View all entries of {{ selected_main|upper }} (All list)
     </a>
 </div>
 {% endif %}
@@ -91,7 +91,7 @@
            style="background: {% cycle '#16a085' '#2980b9' '#e67e22' as sub_colors %};">
             <div class="label">{{ item.label|upper }}</div>
             <div class="count">{{ item.count }}</div>
-            <div class="view-link">DEKHO DETAILS →</div>
+            <div class="view-link">View DETAILS →</div>
         </a>
     </div>
     {% endfor %}
@@ -119,7 +119,7 @@
 <div class="table-responsive card p-3 mb-4">
     <table class="table table-sm table-hover entries-mini-table">
         <thead>
-            <tr><th>Name</th><th>Designation</th><th>Mobile</th><th>Actions</th></tr>
+            <tr><th>{{ t.name }}</th><th>{{ t.designation }}</th><th>{{ t.mobile_number }}</th><th>{{ t.actions }}</th></tr>
         </thead>
         <tbody>
             {% for officer in matching_entries %}
@@ -128,8 +128,8 @@
                 <td>{{ officer.designation }}</td>
                 <td>{{ officer.mobile_number }}</td>
                 <td>
-                    <a href="{% url 'officer_edit' officer.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
-                    <a href="{% url 'generate_officer_pdf' officer.pk %}" target="_blank" class="btn btn-sm btn-outline-dark">PDF</a>
+                    <a href="{% url 'officer_edit' officer.pk %}" class="btn btn-sm btn-outline-primary">{{ t.edit }}</a>
+                    <a href="{% url 'generate_officer_pdf' officer.pk %}" target="_blank" class="btn btn-sm btn-outline-dark">{{ t.pdf }}</a>
                 </td>
             </tr>
             {% endfor %}

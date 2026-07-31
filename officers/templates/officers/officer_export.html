@@ -5,7 +5,7 @@
 {% block content %}
 <div class="container mt-4">
 
-    <h3>📤 Entries Export Karo (CSV / Excel)</h3>
+    <h3>📤 Export Entries (CSV / Excel)</h3>
 
     <div class="card p-4">
 
@@ -16,7 +16,7 @@
         <div class="d-flex gap-2 flex-wrap">
             <a href="{% url 'officer_export_csv' %}"class="btn btn-success"><i class="bi bi-filetype-csv"></i>Export CSV</a>
             <a href="{% url 'officer_export_excel' %}"class="btn btn-primary"><i class="bi bi-file-earmark-excel"></i>Export Excel</a>
-            <a href="{% url 'officer_list' %}"class="btn btn-dark"><i class="bi bi-arrow-left"></i>Sabhi Entries Dekho</a>
+            <a href="{% url 'officer_list' %}"class="btn btn-dark"><i class="bi bi-arrow-left"></i>View All Entries</a>
         </div>
 
     </div>

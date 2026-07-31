@@ -18,14 +18,18 @@
 </head>
 <body>
     {% if user.is_authenticated %}
-    <nav class="navbar navbar-expand-lg navbar-dark bg-danger">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
-            <a class="navbar-brand" href="{% url 'kumbh_mela_dashboard' %}">🕉️ E - Directory</a>
+            <a class="navbar-brand" href="{% url 'kumbh_mela_dashboard' %}"> {{ t.e_directory }}</a>
             <div>
-                <a href="{% url 'officer_list' %}" class="btn btn-outline-light btn-sm me-2">सभी एंट्री</a>
-                <a href="{% url 'officer_add' %}" class="btn btn-outline-light btn-sm me-2">+ नई एंट्री</a>
-                <a href="{% url 'search_officers' %}" class="btn btn-outline-light btn-sm me-2">खोजें</a>
-                <a href="{% url 'admin_logout' %}" class="btn btn-light btn-sm">Logout</a>
+                <a href="{% url 'officer_list' %}" class="btn btn-outline-light btn-sm me-2">{{ t.view_all_entries }}</a>
+                <a href="{% url 'officer_add' %}" class="btn btn-outline-light btn-sm me-2">+ {{ t.add_entry }}</a>
+                <a href="{% url 'search_officers' %}" class="btn btn-outline-light btn-sm me-2">{{ t.search }}</a>
+                <div class="btn-group me-2">
+                    <a href="{% url 'set_language' 'en' %}" class="btn btn-sm {% if current_language == 'en' %}btn-light{% else %}btn-outline-light{% endif %}">EN</a>
+                    <a href="{% url 'set_language' 'mr' %}" class="btn btn-sm {% if current_language == 'mr' %}btn-light{% else %}btn-outline-light{% endif %}">मराठी</a>
+                </div>
+                <a href="{% url 'admin_logout' %}" class="btn btn-light btn-sm">{{ t.logout }}</a>
             </div>
         </div>
     </nav>

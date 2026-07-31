@@ -126,10 +126,15 @@ GOVT_LEVEL_CHOICES = [
     ('state', 'State Govt'),
 ]
 
+GENDER_CHOICES = [
+    ('male', 'Male'),
+    ('female', 'Female'),
+]
+
 
 class Officer(models.Model):
     name = models.CharField("Name (नाम)", max_length=255)
-    mobile_number = models.CharField("Mobile Number (नंबर)", max_length=15)
+    mobile_number = models.CharField("Mobile Number (नंबर)", max_length=10)
     designation = models.CharField("अधिकारी पद", max_length=255)
     state = models.CharField("State (राज्य)", max_length=100)
     city = models.CharField("City (शहर)", max_length=100)
@@ -141,12 +146,13 @@ class Officer(models.Model):
     sub_sub_type = models.CharField("Sub-Sub Type", max_length=50, blank=True, null=True)
     division = models.CharField("Division (विभाग)", max_length=50, choices=DIVISION_CHOICES, blank=True, null=True)
     government_level = models.CharField("Govt Level", max_length=20, choices=GOVT_LEVEL_CHOICES, blank=True, null=True)
+    gender = models.CharField("Gender", max_length=10, choices=GENDER_CHOICES, blank=True, null=True)
     department = models.CharField("Department (शाखा)", max_length=255, blank=True, null=True)
     category = models.CharField("Category (जात)", max_length=100, blank=True, null=True)
     sub_category = models.CharField("Sub-Category (पोटजात)", max_length=100, blank=True, null=True)
-    contact_2 = models.CharField("Contact 2", max_length=15, blank=True, null=True)
+    contact_2 = models.CharField("Contact 2", max_length=10, blank=True, null=True)
     email = models.EmailField("Email", max_length=255, blank=True, null=True)
-    office_phone = models.CharField("Office Phone", max_length=20, blank=True, null=True)
+    office_phone = models.CharField("Office Phone", max_length=13, blank=True, null=True)
     pbx_extension = models.CharField("PBX Extension", max_length=20, blank=True, null=True)
     photo = models.ImageField("Photo", upload_to='officer_photos/', blank=True, null=True)
 

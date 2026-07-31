@@ -234,6 +234,12 @@ class OfficerForm(forms.ModelForm):
     #     })
     # )
 
+    gender = forms.ChoiceField(
+        choices=[('', '-'), ('male', 'Male'), ('female', 'Female')],
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+
     division = forms.ChoiceField(
         choices=[("", "Select Division")] + DIVISION_CHOICES,
         required=False,
@@ -265,7 +271,7 @@ class OfficerForm(forms.ModelForm):
     class Meta:
         model = Officer
         fields = ['name', 'mobile_number', 'contact_2', 'department', 'designation', 'category', 'sub_category', 
-                   'address', 'division', 'government_level', 'email', 'office_phone', 
+                   'address', 'division', 'government_level', 'gender', 'email', 'office_phone', 
                    'pbx_extension', 'photo','main_type', 'sub_type', 'sub_sub_type']
         
         widgets = {
@@ -276,6 +282,7 @@ class OfficerForm(forms.ModelForm):
             'category': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Category'}),
             'sub_category': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Sub-Category'}),
             'contact_2': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'दूसरा नंबर'}),
+            # 'gender': forms.Select(attrs={'class': 'form-select'}),
             'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'email@example.com'}),
             'office_phone': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Office Phone'}),
             'pbx_extension': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'PBX Extension'}),
