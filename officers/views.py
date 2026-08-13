@@ -162,6 +162,7 @@ from .models import SUB_TYPE_MAP, SUB_SUB_TYPE_MAP
 from .models import Officer
 from .forms import OfficerForm
 from django.shortcuts import redirect
+from .translations import TRANSLATIONS, translate_value
 from .models import DIVISION_CHOICES, GOVT_LEVEL_CHOICES, GENDER_CHOICES, MAIN_TYPE_CHOICES, SUB_TYPE_MAP, SUB_SUB_TYPE_MAP
 
 
@@ -361,9 +362,11 @@ def officer_list(request):
 def officer_list_pdf(request):
     officers, page_title, filters = _get_filtered_officers_and_title(request)
 
+    lang = request.session.get('language', 'en')
     html_string = render_to_string('officers/officer_search_pdf_template.html', {
         'results': officers,
         'page_title': page_title,
+        't': TRANSLATIONS.get(lang, TRANSLATIONS['en']),
     })
 
     try:
@@ -377,6 +380,7 @@ def officer_list_pdf(request):
 
 def _get_filtered_officers_and_title(request):
     officers = Officer.objects.all()
+    lang = request.session.get('language', 'en')
 
     division_filter = request.GET.get('division')
     govt_level_filter = request.GET.get('govt_level')
@@ -400,20 +404,24 @@ def _get_filtered_officers_and_title(request):
 
     title_parts = []
     if main_type_filter:
-        title_parts.append(dict(MAIN_TYPE_CHOICES).get(main_type_filter, main_type_filter))
-    if sub_type_filter and main_type_filter in SUB_TYPE_MAP:
-        title_parts.append(dict(SUB_TYPE_MAP[main_type_filter]).get(sub_type_filter, sub_type_filter))
-    if sub_sub_type_filter and sub_type_filter in SUB_SUB_TYPE_MAP:
-        title_parts.append(dict(SUB_SUB_TYPE_MAP[sub_type_filter]).get(sub_sub_type_filter, sub_sub_type_filter))
+        title_parts.append(translate_value(main_type_filter, lang))
+    if sub_type_filter:
+        title_parts.append(translate_value(sub_type_filter, lang))
+    if sub_sub_type_filter:
+        title_parts.append(translate_value(sub_sub_type_filter, lang))
     if division_filter:
-        title_parts.append(dict(DIVISION_CHOICES).get(division_filter, division_filter))
+        title_parts.append(translate_value(division_filter, lang))
     if govt_level_filter:
-        title_parts.append(dict(GOVT_LEVEL_CHOICES).get(govt_level_filter, govt_level_filter))
+        title_parts.append(translate_value(govt_level_filter, lang))
     if gender_filter:
-        gender_label = dict(GENDER_CHOICES).get(gender_filter, gender_filter)
-        title_parts.append(f"{gender_label} Entries (Only)")
+        gender_label = translate_value(gender_filter, lang)
+        suffix = 'Entries (Only)' if lang == 'en' else 'नोंदी (फक्त)'
+        title_parts.append(f"{gender_label} {suffix}")
 
-    page_title = " — ".join(title_parts) if title_parts else "All Entries"
+    if title_parts:
+        page_title = " — ".join(title_parts)
+    else:
+        page_title = 'All Entries' if lang == 'en' else 'सर्व नोंदी'
 
     filters = {
         'division_filter': division_filter,
@@ -592,9 +600,11 @@ def search_results_pdf(request):
     results = []
     if query and search_by in field_map:
         results = Officer.objects.filter(**{field_map[search_by]: query})
+    lang = request.session.get('language', 'en')
     html_string = render_to_string('officers/officer_search_pdf_template.html', {
         'results': results,
         'query': query,
+        't': TRANSLATIONS.get(lang, TRANSLATIONS['en']),
     })
     try:
         from weasyprint import HTML
@@ -768,9 +778,11 @@ def selected_officers_pdf(request):
     ids = [i for i in ids_param.split(',') if i.isdigit()]
     results = Officer.objects.filter(pk__in=ids)
 
+    lang = request.session.get('language', 'en')
     html_string = render_to_string('officers/officer_search_pdf_template.html', {
         'results': results,
         'query': 'Selected Entries',
+        't': TRANSLATIONS.get(lang, TRANSLATIONS['en']),
     })
 
     try:

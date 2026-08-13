@@ -59,7 +59,7 @@ img.officer-photo{
 </head>
 <body>
     <h2>{% if page_title %}{{ page_title }}{% else %} Details of {{ query }} {% endif %}</h2>
-    <p class="meta">| &nbsp; Total entries: {{ results|length }} &nbsp; |</p>
+    <p class="meta">| &nbsp; {{ t.total_entries }}: {{ results|length }} &nbsp; |</p>
 
     <table>
         <colgroup>
@@ -78,18 +78,18 @@ img.officer-photo{
         </colgroup>
         <thead>
             <tr>
-                <th>Sr.No.</th>
-                <th>Name</th>
-                <th>Dept.</th>
-                <th>Designation</th>
-                <th>Category</th>
-                <th>Sub-Category</th>
-                <th>Contact 1</th>
-                <th>Contact 2</th>
-                <th>Email</th>
-                <th>Office Ph.</th>
-                <th>PBX Ext.</th>
-                <th>Photo</th>
+                <th>{{ t.sr_no }}</th>
+                <th>{{ t.name }}</th>
+                <th>{{ t.dept }}</th>
+                <th>{{ t.designation }}</th>
+                <th>{{ t.category }}</th>
+                <th>{{ t.sub_category }}</th>
+                <th>{{ t.contact_1 }}</th>
+                <th>{{ t.contact_2 }}</th>
+                <th>{{ t.email }}</th>
+                <th>{{ t.office_ph }}</th>
+                <th>{{ t.pbx_ext }}</th>
+                <th>{{ t.photo }}</th>
             </tr>
         </thead>
         <tbody>

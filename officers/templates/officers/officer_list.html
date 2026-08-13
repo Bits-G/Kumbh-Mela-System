@@ -428,15 +428,7 @@
     {% empty %}
     <tr><td colspan="13" class="text-center text-muted">{{ t.no_entry_found }}</td></tr>
     {% endfor %}
-    <script>
-            document.getElementById("select-all").addEventListener("change", function () {
-
-                document.querySelectorAll(".row-checkbox").forEach(function (cb) {
-                    cb.checked = document.getElementById("select-all").checked;
-                });
-
-            });
-    </script>
+    
 </tbody>
 
     </table>
@@ -554,9 +546,15 @@
 
         function syncSelectAllState() {
             if (!selectAll) return;
-            const total = checkboxes.length;
-            const checked = document.querySelectorAll('.row-checkbox:checked').length;
+            const visibleCheckboxes = Array.from(checkboxes).filter(isRowVisible);
+            const total = visibleCheckboxes.length;
+            const checked = visibleCheckboxes.filter(cb => cb.checked).length;
             selectAll.checked = total > 0 && total === checked;
+        }
+
+        function isRowVisible(cb) {
+            const row = cb.closest('tr');
+            return row && row.style.display !== 'none';
         }
 
         checkboxes.forEach(cb => {
@@ -577,6 +575,7 @@
             selectAll.addEventListener('change', function () {
                 let ids = getStoredIds();
                 checkboxes.forEach(cb => {
+                    if (!isRowVisible(cb)) return;   // search se hidden rows ko skip karo
                     cb.checked = this.checked;
                     if (this.checked) {
                         if (!ids.includes(cb.value)) ids.push(cb.value);
@@ -592,20 +591,5 @@
         updateSelectedCount();
     });
 </script>
-<script> 
- const selectAll=document.getElementById("select-all"); 
- const checkboxes=document.querySelectorAll(".row-checkbox"); 
- selectAll.addEventListener("change",function(){ 
-    checkboxes.forEach(cb=>{ 
-        cb.checked=this.checked; 
-        }); 
-        }); 
-        checkboxes.forEach(cb=>{ cb.addEventListener("change",function(){ 
-            const total=checkboxes.length; 
-            const checked=document.querySelectorAll(".row-checkbox:checked").length; 
-            selectAll.checked=(total===checked); 
-            }); 
-    }
-    ); 
-</script>
+
 {% endblock %}
